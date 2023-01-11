@@ -1,0 +1,30 @@
+package userinfo
+
+import (
+	"context"
+
+	"osoc/pkg/healthcheck"
+
+	"osoc/internal/entity"
+)
+
+//go:generate mockgen -source=interfaces.go -destination=../../mocks/userinfo.go -package=mocks
+type (
+	// UserService -.
+	UserService interface {
+		GetUser(ctx context.Context, id int) (entity.User, error)
+	}
+	// UserRepo -.
+	UserRepo interface {
+		GetUser(ctx context.Context, id int) (entity.User, error)
+		CreateUser(ctx context.Context, user entity.User) error
+		UpdateUser(ctx context.Context, user entity.User) error
+		DeleteUser(ctx context.Context, id int) error
+	}
+	// UserDaemon -.
+	UserDaemon interface {
+		Run()
+		Terminate(ctx context.Context) error
+		Healthcheck(ctx context.Context) healthcheck.ProbeStatus
+	}
+)
