@@ -33,6 +33,10 @@ const _ = twirp.TwirpPackageMinVersion_8_1_0
 
 type AuthService interface {
 	Authorization(context.Context, *AuthRequest) (*AuthOKResponse, error)
+
+	Registration(context.Context, *RegisterRequest) (*RegisterOkResponse, error)
+
+	Refresh(context.Context, *RefreshRequest) (*RefreshOkResponse, error)
 }
 
 // ===========================
@@ -41,7 +45,7 @@ type AuthService interface {
 
 type authServiceProtobufClient struct {
 	client      HTTPClient
-	urls        [1]string
+	urls        [3]string
 	interceptor twirp.Interceptor
 	opts        twirp.ClientOptions
 }
@@ -69,8 +73,10 @@ func NewAuthServiceProtobufClient(baseURL string, client HTTPClient, opts ...twi
 	// Build method URLs: <baseURL>[<prefix>]/<package>.<Service>/<Method>
 	serviceURL := sanitizeBaseURL(baseURL)
 	serviceURL += baseServicePath(pathPrefix, "api.v1", "AuthService")
-	urls := [1]string{
+	urls := [3]string{
 		serviceURL + "Authorization",
+		serviceURL + "Registration",
+		serviceURL + "Refresh",
 	}
 
 	return &authServiceProtobufClient{
@@ -127,13 +133,105 @@ func (c *authServiceProtobufClient) callAuthorization(ctx context.Context, in *A
 	return out, nil
 }
 
+func (c *authServiceProtobufClient) Registration(ctx context.Context, in *RegisterRequest) (*RegisterOkResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "api.v1")
+	ctx = ctxsetters.WithServiceName(ctx, "AuthService")
+	ctx = ctxsetters.WithMethodName(ctx, "Registration")
+	caller := c.callRegistration
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *RegisterRequest) (*RegisterOkResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*RegisterRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*RegisterRequest) when calling interceptor")
+					}
+					return c.callRegistration(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*RegisterOkResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*RegisterOkResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *authServiceProtobufClient) callRegistration(ctx context.Context, in *RegisterRequest) (*RegisterOkResponse, error) {
+	out := new(RegisterOkResponse)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[1], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *authServiceProtobufClient) Refresh(ctx context.Context, in *RefreshRequest) (*RefreshOkResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "api.v1")
+	ctx = ctxsetters.WithServiceName(ctx, "AuthService")
+	ctx = ctxsetters.WithMethodName(ctx, "Refresh")
+	caller := c.callRefresh
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *RefreshRequest) (*RefreshOkResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*RefreshRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*RefreshRequest) when calling interceptor")
+					}
+					return c.callRefresh(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*RefreshOkResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*RefreshOkResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *authServiceProtobufClient) callRefresh(ctx context.Context, in *RefreshRequest) (*RefreshOkResponse, error) {
+	out := new(RefreshOkResponse)
+	ctx, err := doProtobufRequest(ctx, c.client, c.opts.Hooks, c.urls[2], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
 // =======================
 // AuthService JSON Client
 // =======================
 
 type authServiceJSONClient struct {
 	client      HTTPClient
-	urls        [1]string
+	urls        [3]string
 	interceptor twirp.Interceptor
 	opts        twirp.ClientOptions
 }
@@ -161,8 +259,10 @@ func NewAuthServiceJSONClient(baseURL string, client HTTPClient, opts ...twirp.C
 	// Build method URLs: <baseURL>[<prefix>]/<package>.<Service>/<Method>
 	serviceURL := sanitizeBaseURL(baseURL)
 	serviceURL += baseServicePath(pathPrefix, "api.v1", "AuthService")
-	urls := [1]string{
+	urls := [3]string{
 		serviceURL + "Authorization",
+		serviceURL + "Registration",
+		serviceURL + "Refresh",
 	}
 
 	return &authServiceJSONClient{
@@ -205,6 +305,98 @@ func (c *authServiceJSONClient) Authorization(ctx context.Context, in *AuthReque
 func (c *authServiceJSONClient) callAuthorization(ctx context.Context, in *AuthRequest) (*AuthOKResponse, error) {
 	out := new(AuthOKResponse)
 	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[0], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *authServiceJSONClient) Registration(ctx context.Context, in *RegisterRequest) (*RegisterOkResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "api.v1")
+	ctx = ctxsetters.WithServiceName(ctx, "AuthService")
+	ctx = ctxsetters.WithMethodName(ctx, "Registration")
+	caller := c.callRegistration
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *RegisterRequest) (*RegisterOkResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*RegisterRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*RegisterRequest) when calling interceptor")
+					}
+					return c.callRegistration(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*RegisterOkResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*RegisterOkResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *authServiceJSONClient) callRegistration(ctx context.Context, in *RegisterRequest) (*RegisterOkResponse, error) {
+	out := new(RegisterOkResponse)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[1], in, out)
+	if err != nil {
+		twerr, ok := err.(twirp.Error)
+		if !ok {
+			twerr = twirp.InternalErrorWith(err)
+		}
+		callClientError(ctx, c.opts.Hooks, twerr)
+		return nil, err
+	}
+
+	callClientResponseReceived(ctx, c.opts.Hooks)
+
+	return out, nil
+}
+
+func (c *authServiceJSONClient) Refresh(ctx context.Context, in *RefreshRequest) (*RefreshOkResponse, error) {
+	ctx = ctxsetters.WithPackageName(ctx, "api.v1")
+	ctx = ctxsetters.WithServiceName(ctx, "AuthService")
+	ctx = ctxsetters.WithMethodName(ctx, "Refresh")
+	caller := c.callRefresh
+	if c.interceptor != nil {
+		caller = func(ctx context.Context, req *RefreshRequest) (*RefreshOkResponse, error) {
+			resp, err := c.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*RefreshRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*RefreshRequest) when calling interceptor")
+					}
+					return c.callRefresh(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*RefreshOkResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*RefreshOkResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+	return caller(ctx, in)
+}
+
+func (c *authServiceJSONClient) callRefresh(ctx context.Context, in *RefreshRequest) (*RefreshOkResponse, error) {
+	out := new(RefreshOkResponse)
+	ctx, err := doJSONRequest(ctx, c.client, c.opts.Hooks, c.urls[2], in, out)
 	if err != nil {
 		twerr, ok := err.(twirp.Error)
 		if !ok {
@@ -318,6 +510,12 @@ func (s *authServiceServer) ServeHTTP(resp http.ResponseWriter, req *http.Reques
 	switch method {
 	case "Authorization":
 		s.serveAuthorization(ctx, resp, req)
+		return
+	case "Registration":
+		s.serveRegistration(ctx, resp, req)
+		return
+	case "Refresh":
+		s.serveRefresh(ctx, resp, req)
 		return
 	default:
 		msg := fmt.Sprintf("no handler for path %q", req.URL.Path)
@@ -483,6 +681,366 @@ func (s *authServiceServer) serveAuthorizationProtobuf(ctx context.Context, resp
 	}
 	if respContent == nil {
 		s.writeError(ctx, resp, twirp.InternalError("received a nil *AuthOKResponse and nil error while calling Authorization. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *authServiceServer) serveRegistration(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveRegistrationJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveRegistrationProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *authServiceServer) serveRegistrationJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "Registration")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(RegisterRequest)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.AuthService.Registration
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *RegisterRequest) (*RegisterOkResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*RegisterRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*RegisterRequest) when calling interceptor")
+					}
+					return s.AuthService.Registration(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*RegisterOkResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*RegisterOkResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *RegisterOkResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *RegisterOkResponse and nil error while calling Registration. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *authServiceServer) serveRegistrationProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "Registration")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(RegisterRequest)
+	if err = proto.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.AuthService.Registration
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *RegisterRequest) (*RegisterOkResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*RegisterRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*RegisterRequest) when calling interceptor")
+					}
+					return s.AuthService.Registration(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*RegisterOkResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*RegisterOkResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *RegisterOkResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *RegisterOkResponse and nil error while calling Registration. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	respBytes, err := proto.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal proto response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/protobuf")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *authServiceServer) serveRefresh(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	header := req.Header.Get("Content-Type")
+	i := strings.Index(header, ";")
+	if i == -1 {
+		i = len(header)
+	}
+	switch strings.TrimSpace(strings.ToLower(header[:i])) {
+	case "application/json":
+		s.serveRefreshJSON(ctx, resp, req)
+	case "application/protobuf":
+		s.serveRefreshProtobuf(ctx, resp, req)
+	default:
+		msg := fmt.Sprintf("unexpected Content-Type: %q", req.Header.Get("Content-Type"))
+		twerr := badRouteError(msg, req.Method, req.URL.Path)
+		s.writeError(ctx, resp, twerr)
+	}
+}
+
+func (s *authServiceServer) serveRefreshJSON(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "Refresh")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	d := json.NewDecoder(req.Body)
+	rawReqBody := json.RawMessage{}
+	if err := d.Decode(&rawReqBody); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+	reqContent := new(RefreshRequest)
+	unmarshaler := protojson.UnmarshalOptions{DiscardUnknown: true}
+	if err = unmarshaler.Unmarshal(rawReqBody, reqContent); err != nil {
+		s.handleRequestBodyError(ctx, resp, "the json request could not be decoded", err)
+		return
+	}
+
+	handler := s.AuthService.Refresh
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *RefreshRequest) (*RefreshOkResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*RefreshRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*RefreshRequest) when calling interceptor")
+					}
+					return s.AuthService.Refresh(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*RefreshOkResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*RefreshOkResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *RefreshOkResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *RefreshOkResponse and nil error while calling Refresh. nil responses are not supported"))
+		return
+	}
+
+	ctx = callResponsePrepared(ctx, s.hooks)
+
+	marshaler := &protojson.MarshalOptions{UseProtoNames: !s.jsonCamelCase, EmitUnpopulated: !s.jsonSkipDefaults}
+	respBytes, err := marshaler.Marshal(respContent)
+	if err != nil {
+		s.writeError(ctx, resp, wrapInternal(err, "failed to marshal json response"))
+		return
+	}
+
+	ctx = ctxsetters.WithStatusCode(ctx, http.StatusOK)
+	resp.Header().Set("Content-Type", "application/json")
+	resp.Header().Set("Content-Length", strconv.Itoa(len(respBytes)))
+	resp.WriteHeader(http.StatusOK)
+
+	if n, err := resp.Write(respBytes); err != nil {
+		msg := fmt.Sprintf("failed to write response, %d of %d bytes written: %s", n, len(respBytes), err.Error())
+		twerr := twirp.NewError(twirp.Unknown, msg)
+		ctx = callError(ctx, s.hooks, twerr)
+	}
+	callResponseSent(ctx, s.hooks)
+}
+
+func (s *authServiceServer) serveRefreshProtobuf(ctx context.Context, resp http.ResponseWriter, req *http.Request) {
+	var err error
+	ctx = ctxsetters.WithMethodName(ctx, "Refresh")
+	ctx, err = callRequestRouted(ctx, s.hooks)
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+
+	buf, err := io.ReadAll(req.Body)
+	if err != nil {
+		s.handleRequestBodyError(ctx, resp, "failed to read request body", err)
+		return
+	}
+	reqContent := new(RefreshRequest)
+	if err = proto.Unmarshal(buf, reqContent); err != nil {
+		s.writeError(ctx, resp, malformedRequestError("the protobuf request could not be decoded"))
+		return
+	}
+
+	handler := s.AuthService.Refresh
+	if s.interceptor != nil {
+		handler = func(ctx context.Context, req *RefreshRequest) (*RefreshOkResponse, error) {
+			resp, err := s.interceptor(
+				func(ctx context.Context, req interface{}) (interface{}, error) {
+					typedReq, ok := req.(*RefreshRequest)
+					if !ok {
+						return nil, twirp.InternalError("failed type assertion req.(*RefreshRequest) when calling interceptor")
+					}
+					return s.AuthService.Refresh(ctx, typedReq)
+				},
+			)(ctx, req)
+			if resp != nil {
+				typedResp, ok := resp.(*RefreshOkResponse)
+				if !ok {
+					return nil, twirp.InternalError("failed type assertion resp.(*RefreshOkResponse) when calling interceptor")
+				}
+				return typedResp, err
+			}
+			return nil, err
+		}
+	}
+
+	// Call service method
+	var respContent *RefreshOkResponse
+	func() {
+		defer ensurePanicResponses(ctx, resp, s.hooks)
+		respContent, err = handler(ctx, reqContent)
+	}()
+
+	if err != nil {
+		s.writeError(ctx, resp, err)
+		return
+	}
+	if respContent == nil {
+		s.writeError(ctx, resp, twirp.InternalError("received a nil *RefreshOkResponse and nil error while calling Refresh. nil responses are not supported"))
 		return
 	}
 
@@ -2418,48 +2976,59 @@ func callClientError(ctx context.Context, h *twirp.ClientHooks, err twirp.Error)
 }
 
 var twirpFileDescriptor0 = []byte{
-	// 686 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x94, 0x5d, 0x4f, 0x13, 0x4d,
-	0x14, 0xc7, 0x9f, 0x6d, 0xb7, 0x2d, 0x3d, 0x05, 0x1e, 0x9e, 0xe9, 0x03, 0xd4, 0x12, 0x92, 0x66,
-	0x2e, 0x10, 0x95, 0x74, 0x69, 0x4b, 0x7c, 0x4d, 0x4c, 0x5a, 0x24, 0x98, 0x98, 0x48, 0xb2, 0x06,
-	0xa3, 0xdc, 0x90, 0xa5, 0x7b, 0x2c, 0x03, 0x65, 0xa7, 0xce, 0x4c, 0xab, 0x60, 0x8c, 0x89, 0x37,
-	0x7e, 0x00, 0xef, 0xfc, 0x28, 0x7e, 0x04, 0x6e, 0xfd, 0x0a, 0x26, 0x7e, 0x07, 0xae, 0xcc, 0xcc,
-	0xee, 0xb6, 0x5b, 0x79, 0x31, 0xc6, 0xbb, 0x99, 0x73, 0xce, 0xfc, 0x7f, 0x67, 0xce, 0xfc, 0x77,
-	0x21, 0xef, 0xf5, 0x58, 0xb5, 0x27, 0xb8, 0xe2, 0x24, 0xab, 0x97, 0x83, 0x5a, 0xb9, 0xd4, 0xe1,
-	0xbc, 0xd3, 0x45, 0xc7, 0x0b, 0x02, 0xae, 0x3c, 0xc5, 0x78, 0x20, 0xc3, 0x8a, 0xf2, 0xfc, 0xc0,
-	0xeb, 0x32, 0xdf, 0x53, 0xe8, 0xc4, 0x8b, 0x28, 0x41, 0xcf, 0x1f, 0xd9, 0xe5, 0x3d, 0x0c, 0xbc,
-	0x1e, 0x1b, 0x34, 0xc2, 0x1a, 0xda, 0x04, 0xbb, 0xd9, 0x57, 0xfb, 0x64, 0x11, 0xe0, 0x15, 0x13,
-	0x52, 0xed, 0x06, 0xde, 0x11, 0x96, 0xac, 0x8a, 0xb5, 0x9c, 0x77, 0xf3, 0x26, 0xf2, 0xd4, 0x3b,
-	0x42, 0x52, 0x86, 0x89, 0x9e, 0x27, 0xe5, 0x1b, 0x2e, 0xfc, 0x52, 0xca, 0x24, 0x87, 0x7b, 0xfa,
-	0x18, 0x0a, 0x5a, 0xc2, 0xc5, 0xd7, 0x7d, 0x94, 0xea, 0x6f, 0x94, 0x96, 0x60, 0x5a, 0x2b, 0x6d,
-	0x3d, 0x71, 0x51, 0xf6, 0x78, 0x20, 0x91, 0xfc, 0x0f, 0x19, 0xc5, 0x0f, 0x31, 0x88, 0x74, 0xc2,
-	0x0d, 0x95, 0x60, 0x6f, 0x4b, 0x14, 0x64, 0x1a, 0x52, 0xcc, 0x37, 0x29, 0xdb, 0x4d, 0x31, 0x9f,
-	0xcc, 0x40, 0xda, 0xeb, 0xa0, 0x91, 0xb5, 0x5d, 0xbd, 0x24, 0x04, 0x6c, 0xd3, 0x46, 0xda, 0x1c,
-	0x37, 0x6b, 0x32, 0x07, 0x59, 0xc9, 0xdb, 0xcc, 0xeb, 0x96, 0x6c, 0x13, 0x8d, 0x76, 0xba, 0xf1,
-	0xb6, 0x40, 0x4f, 0xa1, 0xbf, 0xeb, 0xa9, 0x52, 0xa6, 0x62, 0x2d, 0x67, 0xdc, 0x7c, 0x14, 0x69,
-	0x2a, 0xba, 0x04, 0x05, 0x0d, 0x8d, 0xaf, 0x39, 0x3f, 0x62, 0xb7, 0x72, 0x67, 0x2d, 0xbb, 0x9e,
-	0xaa, 0xfc, 0xa3, 0x9b, 0xa0, 0x4d, 0xf8, 0x4f, 0xd7, 0xad, 0x9b, 0x83, 0x71, 0xf5, 0x0a, 0x4c,
-	0xf4, 0x25, 0x8a, 0x16, 0xf7, 0x8f, 0x4d, 0x7b, 0x85, 0xfa, 0x4c, 0x35, 0x7c, 0xd8, 0xea, 0x76,
-	0x14, 0x77, 0x87, 0x15, 0x74, 0x27, 0x94, 0xd8, 0xee, 0xf9, 0x09, 0x89, 0xcb, 0x80, 0x7f, 0xa8,
-	0xdd, 0x81, 0x89, 0x38, 0x1a, 0xcf, 0xcb, 0x3a, 0x3f, 0xaf, 0xd4, 0x85, 0xf3, 0x4a, 0x5f, 0x31,
-	0x2f, 0xfb, 0xd7, 0x79, 0x35, 0xe0, 0x5f, 0x0d, 0xda, 0x44, 0x35, 0x7c, 0xcd, 0x0a, 0xd8, 0xba,
-	0x0f, 0x03, 0x2c, 0xd4, 0x27, 0x93, 0x5d, 0xba, 0x26, 0x43, 0x67, 0x60, 0x5a, 0xef, 0xb6, 0x0e,
-	0xe3, 0x33, 0xf5, 0xfd, 0xd0, 0x5d, 0xcf, 0x50, 0x0c, 0x58, 0x1b, 0xc9, 0x4b, 0x98, 0xd2, 0x5b,
-	0x2e, 0xd8, 0x89, 0x71, 0x34, 0x29, 0xc6, 0x2a, 0x09, 0x0f, 0x96, 0xe7, 0x92, 0xc1, 0x91, 0x9d,
-	0xe8, 0xc2, 0xc7, 0x6f, 0xdf, 0x3f, 0xa7, 0x66, 0x69, 0xd1, 0x49, 0xe4, 0x23, 0xe9, 0xfa, 0x8f,
-	0x74, 0xf8, 0xc2, 0x31, 0xea, 0x00, 0x72, 0x9b, 0xa8, 0x8c, 0xd1, 0x8a, 0x63, 0xad, 0x46, 0x90,
-	0xf9, 0x64, 0x30, 0x71, 0x4d, 0x5a, 0x33, 0x94, 0x5b, 0xf4, 0x86, 0x83, 0x6f, 0x15, 0x8a, 0xc0,
-	0xeb, 0x3a, 0x89, 0xca, 0x48, 0xde, 0x89, 0xb4, 0x9d, 0x77, 0xcc, 0x7f, 0x4f, 0x4e, 0x00, 0x42,
-	0xc3, 0x18, 0xdc, 0xb5, 0xa4, 0xf2, 0x98, 0x91, 0x46, 0x37, 0x1b, 0x1f, 0x13, 0xbd, 0x67, 0x98,
-	0x0d, 0x7a, 0xfd, 0x4a, 0xe6, 0x88, 0x71, 0x7f, 0xe8, 0x08, 0xf2, 0x01, 0x20, 0x74, 0xda, 0x79,
-	0xf6, 0x98, 0x03, 0x2f, 0x65, 0x3f, 0x34, 0xec, 0xbb, 0x74, 0xe5, 0x4a, 0xf6, 0x88, 0x61, 0xae,
-	0x9c, 0x68, 0x80, 0x03, 0x3c, 0xc2, 0x2e, 0x46, 0x0d, 0x5c, 0x38, 0xeb, 0xcb, 0xd0, 0x6b, 0x06,
-	0x5d, 0xfd, 0x0d, 0x7a, 0xa4, 0x6e, 0xd0, 0xad, 0x4f, 0xd6, 0x8e, 0xfe, 0xc3, 0x3a, 0x83, 0xda,
-	0x83, 0x41, 0xed, 0xeb, 0xe6, 0x31, 0x59, 0x00, 0x7b, 0x4b, 0xf2, 0x36, 0x99, 0xe4, 0x92, 0xb7,
-	0x2b, 0x32, 0x32, 0x44, 0xa6, 0x56, 0x5d, 0xad, 0xae, 0xde, 0xdc, 0x81, 0x17, 0xf0, 0x1c, 0xa6,
-	0x36, 0x84, 0xe0, 0x62, 0x68, 0xe5, 0x0d, 0x58, 0x3f, 0xb5, 0xb2, 0x7c, 0xef, 0x00, 0xdb, 0xea,
-	0xcc, 0xba, 0x03, 0x8b, 0x60, 0xb7, 0xb9, 0x8f, 0x64, 0x16, 0x8a, 0xa7, 0x56, 0x8e, 0x05, 0x0a,
-	0x3b, 0x28, 0xbe, 0xa4, 0xb2, 0x7d, 0x16, 0xa8, 0xdb, 0x6b, 0x30, 0x07, 0xb9, 0x23, 0x94, 0x52,
-	0x7f, 0x62, 0x05, 0xc8, 0x9f, 0x5a, 0x59, 0xa9, 0x04, 0x0b, 0x3a, 0x7b, 0x59, 0xf3, 0x17, 0x6e,
-	0xfc, 0x0c, 0x00, 0x00, 0xff, 0xff, 0x0e, 0x96, 0xe3, 0xb5, 0xf1, 0x05, 0x00, 0x00,
+	// 849 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x95, 0xdd, 0x6e, 0x1b, 0x45,
+	0x14, 0xc7, 0xd9, 0xcd, 0xc6, 0x8e, 0x8f, 0xd3, 0x34, 0x9d, 0x40, 0xe2, 0x3a, 0x44, 0x32, 0x53,
+	0x09, 0x52, 0x5a, 0x79, 0x6b, 0xbb, 0xe2, 0x53, 0x20, 0xc5, 0xa5, 0x0a, 0x02, 0xd1, 0x48, 0x0b,
+	0x41, 0x28, 0x37, 0xd1, 0xd4, 0x7b, 0xba, 0xdd, 0xd6, 0xde, 0x31, 0x33, 0x63, 0xd3, 0x16, 0x21,
+	0x24, 0x6e, 0x78, 0x00, 0xee, 0x78, 0x05, 0xde, 0x80, 0x27, 0x40, 0xb9, 0xe5, 0x15, 0x90, 0x78,
+	0x87, 0x5e, 0xa1, 0x99, 0xd9, 0xf5, 0xee, 0xda, 0x4e, 0x00, 0x29, 0x77, 0x3b, 0x67, 0xce, 0xf9,
+	0xff, 0xce, 0x9c, 0x99, 0x73, 0x16, 0x6a, 0x6c, 0x1c, 0xb7, 0xc7, 0x82, 0x2b, 0x4e, 0x2a, 0xfa,
+	0x73, 0xda, 0x69, 0x36, 0x22, 0xce, 0xa3, 0x21, 0xfa, 0x2c, 0x49, 0xb8, 0x62, 0x2a, 0xe6, 0x89,
+	0xb4, 0x1e, 0xcd, 0x9d, 0x29, 0x1b, 0xc6, 0x21, 0x53, 0xe8, 0x67, 0x1f, 0xe9, 0x06, 0x5d, 0x0c,
+	0x39, 0xe5, 0x63, 0x4c, 0xd8, 0x38, 0x9e, 0xf6, 0xac, 0x0f, 0xfd, 0x14, 0xea, 0x07, 0x13, 0xf5,
+	0x38, 0xc0, 0x6f, 0x27, 0x28, 0x15, 0xd9, 0x03, 0x78, 0x14, 0x0b, 0xa9, 0x4e, 0x13, 0x36, 0xc2,
+	0x86, 0xd3, 0x72, 0xf6, 0x6b, 0x41, 0xcd, 0x58, 0x1e, 0xb0, 0x11, 0x92, 0x26, 0xac, 0x8d, 0x99,
+	0x94, 0xdf, 0x71, 0x11, 0x36, 0x5c, 0xb3, 0x39, 0x5b, 0xd3, 0xcf, 0x60, 0x43, 0x2b, 0x1d, 0x7d,
+	0x1e, 0xa0, 0x1c, 0xf3, 0x44, 0x22, 0x79, 0x15, 0x56, 0x15, 0x7f, 0x8a, 0x49, 0xaa, 0x63, 0x17,
+	0x84, 0xc2, 0xba, 0xc0, 0x47, 0x02, 0xe5, 0xe3, 0xaf, 0xcc, 0xa6, 0xd5, 0x29, 0xd9, 0xe8, 0x47,
+	0xb0, 0x11, 0xd8, 0x75, 0x96, 0xd8, 0xad, 0xb9, 0x28, 0x23, 0xd9, 0xaf, 0xbe, 0xec, 0x7b, 0xc2,
+	0xdd, 0x74, 0xe6, 0xc2, 0xbf, 0x80, 0x6b, 0x69, 0xf8, 0xd1, 0xd3, 0x4b, 0xc8, 0xe6, 0x37, 0x07,
+	0xae, 0x06, 0x18, 0xc5, 0x52, 0xa1, 0xf8, 0x8f, 0x85, 0xda, 0x85, 0xda, 0x90, 0x65, 0xbb, 0x69,
+	0xa5, 0xb4, 0x61, 0xa1, 0x8a, 0x2b, 0xe5, 0x2a, 0x92, 0x4d, 0x58, 0x91, 0xf8, 0xac, 0xe1, 0x19,
+	0xb3, 0xfe, 0xd4, 0x16, 0x16, 0x61, 0x63, 0xb5, 0xe5, 0xec, 0xaf, 0x06, 0xfa, 0x93, 0xbc, 0x0e,
+	0xb5, 0x38, 0x51, 0x28, 0x50, 0x2a, 0xd9, 0xa8, 0x58, 0xf4, 0xcc, 0x40, 0x1f, 0x00, 0xc9, 0x92,
+	0xbd, 0x94, 0xd3, 0x4b, 0xf0, 0x8e, 0x25, 0x0a, 0xb2, 0x01, 0x6e, 0x1c, 0x9a, 0x70, 0x2f, 0x70,
+	0xe3, 0x30, 0xcb, 0xcb, 0x35, 0x06, 0x93, 0x17, 0x01, 0xcf, 0x9c, 0xd7, 0x9e, 0xc9, 0x7c, 0x93,
+	0x6d, 0xa8, 0x48, 0x3e, 0x88, 0xd9, 0x30, 0x3d, 0x52, 0xba, 0xd2, 0xf5, 0x1b, 0x08, 0x64, 0x0a,
+	0xc3, 0x53, 0xa6, 0xd2, 0xc3, 0xd5, 0x52, 0xcb, 0x81, 0xa2, 0x6f, 0x42, 0x5d, 0x43, 0xb3, 0x6a,
+	0xef, 0xe4, 0x6c, 0x73, 0xe7, 0x5d, 0xb7, 0xf5, 0x8a, 0x4e, 0x82, 0x1e, 0xc0, 0x35, 0xed, 0x77,
+	0xcf, 0x04, 0x66, 0xde, 0xb7, 0x61, 0x6d, 0x22, 0x51, 0xf4, 0x79, 0xf8, 0xdc, 0xa4, 0x57, 0xef,
+	0x6e, 0xb6, 0x6d, 0x17, 0xb5, 0x8f, 0x53, 0x7b, 0x30, 0xf3, 0xa0, 0x27, 0x56, 0xe2, 0x78, 0x1c,
+	0x16, 0x24, 0xce, 0x03, 0xfe, 0x4f, 0xed, 0x08, 0xd6, 0x32, 0x6b, 0x56, 0x2f, 0x67, 0xb1, 0x5e,
+	0xee, 0xd2, 0x7a, 0xad, 0x5c, 0x50, 0x2f, 0x6f, 0xbe, 0x5e, 0x3d, 0xb8, 0xaa, 0x41, 0x87, 0xa8,
+	0x66, 0x37, 0xde, 0x02, 0x4f, 0xe7, 0x61, 0x80, 0xf5, 0xee, 0x7a, 0x31, 0xcb, 0xc0, 0xec, 0xd0,
+	0x4d, 0xd8, 0xd0, 0xab, 0xfc, 0x95, 0x74, 0xff, 0x70, 0xed, 0x38, 0xf8, 0x12, 0xc5, 0x34, 0x1e,
+	0x20, 0x89, 0xe0, 0x8a, 0x5e, 0x72, 0x11, 0xbf, 0x30, 0xf3, 0x83, 0x6c, 0x65, 0x32, 0x85, 0xa1,
+	0xd1, 0xdc, 0x2e, 0x1a, 0xf3, 0xfe, 0xa7, 0x37, 0x7f, 0xfa, 0xf3, 0xaf, 0x5f, 0xdc, 0x1b, 0xf4,
+	0x0d, 0xbf, 0xb0, 0x9f, 0x4a, 0xfb, 0x65, 0xdd, 0x11, 0xac, 0xdb, 0x47, 0x2b, 0xec, 0x7a, 0x27,
+	0x93, 0x9c, 0xeb, 0xbb, 0x66, 0x73, 0x7e, 0x23, 0xcf, 0x9e, 0xee, 0x1b, 0x1e, 0xa5, 0xad, 0x65,
+	0xbc, 0x92, 0x3c, 0x83, 0x6a, 0x3a, 0x20, 0xc8, 0x76, 0x2e, 0x58, 0x1c, 0x38, 0xcd, 0xeb, 0x73,
+	0xf6, 0x02, 0xe7, 0x86, 0xe1, 0xec, 0xd1, 0xdd, 0xe5, 0x1c, 0xe3, 0xde, 0xfd, 0x7b, 0xc5, 0x3e,
+	0xe1, 0xac, 0x94, 0x4f, 0xa0, 0x7a, 0x88, 0xca, 0x74, 0xd2, 0x56, 0xe9, 0x2e, 0x52, 0xde, 0x4e,
+	0xd1, 0x58, 0xb8, 0x47, 0xda, 0x31, 0xb4, 0x5b, 0xf4, 0xa6, 0x8f, 0xcf, 0x14, 0x8a, 0x84, 0x0d,
+	0xfd, 0x82, 0x67, 0x86, 0x4d, 0xb5, 0xfd, 0xef, 0xe3, 0xf0, 0x07, 0xf2, 0x02, 0xc0, 0x76, 0x84,
+	0xc1, 0x5d, 0x2f, 0x2a, 0x97, 0x3a, 0x25, 0xbf, 0xb9, 0xf2, 0x3b, 0xa0, 0xef, 0x1b, 0x66, 0x8f,
+	0xbe, 0x75, 0x21, 0x33, 0x67, 0x7c, 0x30, 0x7b, 0xf2, 0xe4, 0x47, 0x00, 0xdb, 0x4a, 0x8b, 0xec,
+	0x52, 0x8b, 0x9d, 0xcb, 0xfe, 0xd8, 0xb0, 0xdf, 0xa3, 0xb7, 0x2f, 0x64, 0xe7, 0x0c, 0x73, 0xe4,
+	0x42, 0x02, 0x1c, 0xe0, 0x13, 0x1c, 0x62, 0x9a, 0xc0, 0xd2, 0x5a, 0x9f, 0x87, 0xbe, 0x6b, 0xd0,
+	0xed, 0x7f, 0x41, 0xe7, 0xea, 0x06, 0xdd, 0xff, 0xd9, 0x39, 0xd1, 0xff, 0x6b, 0x7f, 0xda, 0xf9,
+	0x70, 0xda, 0xf9, 0xfd, 0xf0, 0x39, 0xd9, 0x05, 0xef, 0x48, 0xf2, 0x01, 0x59, 0xe7, 0x92, 0x0f,
+	0x5a, 0xd2, 0x86, 0x75, 0x57, 0x3b, 0xed, 0x3b, 0xed, 0x3b, 0x6f, 0x9f, 0xc0, 0x37, 0xf0, 0x35,
+	0x5c, 0xb9, 0x2f, 0x04, 0x17, 0xb3, 0x5e, 0xbd, 0x0f, 0xf7, 0xce, 0x9c, 0x0a, 0x7f, 0xf8, 0x04,
+	0x07, 0xea, 0xa5, 0xf3, 0x2e, 0xec, 0x81, 0x37, 0xe0, 0x21, 0x92, 0xd7, 0x60, 0xeb, 0xcc, 0xa9,
+	0xea, 0xd9, 0x1e, 0xa1, 0xf8, 0xd5, 0xad, 0x4c, 0xe2, 0x44, 0xbd, 0x73, 0x17, 0xb6, 0xa1, 0x3a,
+	0x42, 0x29, 0xf5, 0x0c, 0xa9, 0x43, 0xed, 0xcc, 0xa9, 0x48, 0x25, 0xe2, 0x24, 0x7a, 0x58, 0x31,
+	0xff, 0xf4, 0xde, 0x3f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xaf, 0xe0, 0x27, 0x86, 0x3f, 0x08, 0x00,
+	0x00,
 }

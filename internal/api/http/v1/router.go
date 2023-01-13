@@ -22,18 +22,19 @@ func NewRouter(
 	engine.Use(recoverer.New())
 
 	defaultPrefix := twirp.WithServerPathPrefix("")
+	innerPrefix := twirp.WithServerPathPrefix("/inner")
 	// -------------------
 	// CREATE TWIRP ROUTES
 	// -------------------
-	userHandler := api.NewUserServiceServer(userCtrl, defaultPrefix)
+	userHandler := api.NewUserServiceServer(userCtrl, innerPrefix)
 	authHandler := api.NewAuthServiceServer(authCtrl, defaultPrefix)
 
 	// -------------------
 	// SECURE ROUTES
 	// -------------------
-	inner := engine.Group("/inner")
+	inner := engine.Group("")
 	inner.Use(jwt.New(
-		jwt.HMACSecret([]byte(conf.App.AuthToken)),
+		jwt.HMACSecret([]byte(conf.App.AppJWTSecret)),
 		jwt.Logger(logger),
 	))
 	inner.POST(userHandler.PathPrefix()+"*action", func(context *gin.Context) {

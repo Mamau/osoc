@@ -69,6 +69,7 @@ func New(opts ...Option) gin.HandlerFunc {
 			return
 		}
 
+		fmt.Println(token.Claims)
 		c.Request = c.Request.WithContext(
 			context.WithValue(c.Request.Context(), claimsContextKey{}, token.Claims),
 		)

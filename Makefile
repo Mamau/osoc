@@ -114,7 +114,7 @@ rebuild: ## Rebuild by Docker Compose
 # Pay attention, --network parameter must be the same as network in docker-compose.yml file.
 .PHONY: goose
 goose: ## Work with migration
-	docker run -ti -u $(shell id -u) --workdir=/home --network=${APP_NAME}_default -v $(shell pwd):/home jerray/goose goose -dir=migrations mysql "$(MY_USER):$(MY_PASSWORD)@($(MY_HOST):$(MY_PORT))/$(MY_DB_NAME)?parseTime=$(MY_PARSE_TIME)" $(cmd)
+	docker run -ti --rm -u $(shell id -u) --workdir=/home --network=${APP_NAME}_default -v $(shell pwd):/home jerray/goose goose -dir=migrations mysql "$(MY_USER):$(MY_PASSWORD)@($(MY_HOST):$(MY_PORT))/$(MY_DB_NAME)?parseTime=$(MY_PARSE_TIME)" $(cmd)
 
 .PHONY: migrate
 migrate: ## Migration up

@@ -7,7 +7,7 @@ info:
     description: osoc service
     version: 1.0.0
 paths:
-    /api.v1.AuthService:
+    /api.v1.AuthService/Authorization:
         post:
             tags:
                 - AuthService
@@ -28,6 +28,61 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/AuthOKResponse'
+    /api.v1.AuthService/Refresh:
+        post:
+            tags:
+                - AuthService
+            operationId: AuthService_Refresh
+            parameters:
+                - name: refreshToken
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RefreshOkResponse'
+    /api.v1.AuthService/Registration:
+        post:
+            tags:
+                - AuthService
+            operationId: AuthService_Registration
+            parameters:
+                - name: firstName
+                  in: query
+                  schema:
+                    type: string
+                - name: lastName
+                  in: query
+                  schema:
+                    type: string
+                - name: password
+                  in: query
+                  schema:
+                    type: string
+                - name: sex
+                  in: query
+                  schema:
+                    type: string
+                - name: age
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: interests
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RegisterOkResponse'
     /external/api.v1.UserService/CreateUser:
         post:
             tags:
@@ -116,6 +171,8 @@ components:
             properties:
                 token:
                     type: string
+                refreshToken:
+                    type: string
         ErrorResponse:
             type: object
             properties:
@@ -123,6 +180,20 @@ components:
                     type: integer
                     format: uint64
                 message:
+                    type: string
+        RefreshOkResponse:
+            type: object
+            properties:
+                token:
+                    type: string
+                refreshToken:
+                    type: string
+        RegisterOkResponse:
+            type: object
+            properties:
+                token:
+                    type: string
+                refreshToken:
                     type: string
         User:
             type: object

@@ -40,7 +40,7 @@ func newApp() (*application.App, func(), error) {
 	service := userinfo.NewService(repository, logger)
 	userCtrl := v1.NewUserCtrl(logger, service)
 	secureRepo := user.NewSecureRepo(db)
-	auth := secure.NewAuth(logger, secureRepo)
+	auth := secure.NewAuth(logger, secureRepo, app)
 	authCtrl := v1.NewAuthCtrl(logger, auth)
 	handler := v1.NewRouter(engine, userCtrl, authCtrl, configConfig, logger)
 	server := serviceprovider.NewHttp(handler, configConfig, logger)

@@ -2,10 +2,12 @@ package v1
 
 import (
 	"context"
+	"fmt"
 	"github.com/twitchtv/twirp"
 	v1 "osoc/api/v1"
 	"osoc/internal/usecase/userinfo"
 	"osoc/pkg/log"
+	"osoc/pkg/router/middleware/auth/jwt"
 )
 
 type UserCtrl struct {
@@ -26,7 +28,22 @@ func (u *UserCtrl) GetUser(ctx context.Context, req *v1.UserRequest) (*v1.UserGe
 		return nil, twirp.InvalidArgument.Error(err.Error())
 	}
 
-	user, err := u.service.GetUser(ctx, int(req.GetId()))
+	claim, ok := jwt.FromContext(ctx)
+	if !ok {
+		return nil, twirp.InternalErrorWith(fmt.Errorf("error while parse claims"))
+	}
+	fmt.Println(claim, "----")
+	//val := claim["id"]
+	//if !ok {
+	//	return nil, twirp.InternalErrorWith(fmt.Errorf("error while parse id"))
+	//}
+	//id, ok2 := val.(int)
+	//if !ok2 {
+	//	fmt.Println(id, val, ok2, reflect.TypeOf(val))
+	//	return nil, twirp.InternalErrorWith(fmt.Errorf("error while parse id2"))
+	//}
+
+	user, err := u.service.GetUser(ctx, 3)
 	if err != nil {
 		return nil, twirp.NotFoundError(err.Error())
 	}
