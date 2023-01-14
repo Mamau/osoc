@@ -29,7 +29,5 @@ var ProviderSet = wire.NewSet(
 	NewPrometheus,
 	NewLogger,
 	v1.NewRouter,
-	v1.NewUserCtrl,
-	v1.NewAuthCtrl,
 	secure.NewAuth,
 )

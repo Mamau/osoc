@@ -2,51 +2,39 @@ package v1
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/twitchtv/twirp"
 	"net/http"
-	api "osoc/api/v1"
 	"osoc/internal/config"
+	"osoc/internal/usecase/secure"
+	"osoc/internal/usecase/userinfo"
 	"osoc/pkg/log"
 	"osoc/pkg/router/middleware/auth/jwt"
-	"osoc/pkg/router/middleware/recoverer"
 )
 
 func NewRouter(
 	engine *gin.Engine,
-	userCtrl *UserCtrl,
-	authCtrl *AuthCtrl,
 	conf *config.Config,
+	authService *secure.Auth,
+	s userinfo.UserService,
 	logger log.Logger,
 ) http.Handler {
+	commonGroup := engine.Group("/api/v1")
 
-	engine.Use(recoverer.New())
-
-	defaultPrefix := twirp.WithServerPathPrefix("")
-	innerPrefix := twirp.WithServerPathPrefix("/inner")
-	// -------------------
-	// CREATE TWIRP ROUTES
-	// -------------------
-	userHandler := api.NewUserServiceServer(userCtrl, innerPrefix)
-	authHandler := api.NewAuthServiceServer(authCtrl, defaultPrefix)
+	commonGroup.GET("/", func(c *gin.Context) { c.Status(http.StatusNoContent) })
+	{
+		newAuthRoutes(commonGroup, logger, authService)
+	}
 
 	// -------------------
 	// SECURE ROUTES
 	// -------------------
-	inner := engine.Group("")
-	inner.Use(jwt.New(
+	secureGroup := commonGroup.Group("/secure")
+	secureGroup.Use(jwt.New(
 		jwt.HMACSecret([]byte(conf.App.AppJWTSecret)),
 		jwt.Logger(logger),
 	))
-	inner.POST(userHandler.PathPrefix()+"*action", func(context *gin.Context) {
-		userHandler.ServeHTTP(context.Writer, context.Request)
-	})
-
-	// -------------------
-	// EXTERNAL ROUTES
-	// -------------------
-	engine.POST(authHandler.PathPrefix()+"*action", func(context *gin.Context) {
-		authHandler.ServeHTTP(context.Writer, context.Request)
-	})
+	{
+		newUserRoutes(secureGroup, logger, s)
+	}
 
 	return engine
 }

@@ -34,9 +34,9 @@ func New(opts ...Option) *gin.Engine {
 	}
 
 	engine.GET("/", h.root)
-	engine.GET("/internal/ready", h.readinessProbe)
-	engine.GET("/internal/live", h.livenessProbe)
-	engine.GET("/internal/doc", h.renderDoc)
+	engine.GET("/ready", h.readinessProbe)
+	engine.GET("/live", h.livenessProbe)
+	engine.GET("/doc", h.renderDoc)
 
 	if o.pprof {
 		pprof.Register(engine, o.pprofPrefix)

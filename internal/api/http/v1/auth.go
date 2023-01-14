@@ -1,54 +1,63 @@
 package v1
 
 import (
-	"context"
-	"github.com/twitchtv/twirp"
-	v1 "osoc/api/v1"
+	"github.com/gin-gonic/gin"
+	"net/http"
+	"osoc/internal/api/http/v1/request"
 	"osoc/internal/entity"
 	"osoc/internal/usecase/secure"
 	"osoc/pkg/log"
 )
 
-type AuthCtrl struct {
+type authRoutes struct {
 	logger      log.Logger
 	authService *secure.Auth
 }
 
-func NewAuthCtrl(logger log.Logger, authService *secure.Auth) *AuthCtrl {
-	return &AuthCtrl{
+func newAuthRoutes(group *gin.RouterGroup, logger log.Logger, authService *secure.Auth) {
+	a := &authRoutes{
 		logger:      logger,
 		authService: authService,
 	}
+	group.POST("/refresh", a.refresh)
+	group.POST("/authorization", a.authorization)
+	group.POST("/registration", a.registration)
 }
-func (a *AuthCtrl) Refresh(ctx context.Context, req *v1.RefreshRequest) (*v1.RefreshOkResponse, error) {
-	if err := req.Validate(); err != nil {
-		return nil, twirp.InvalidArgument.Error(err.Error())
+
+func (a *authRoutes) refresh(c *gin.Context) {
+	var r request.Refresh
+	if err := c.ShouldBind(&r); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
-	tokens, err := a.authService.RefreshToken(ctx, req.RefreshToken)
+	tokens, err := a.authService.RefreshToken(c.Request.Context(), r.Token)
 	if err != nil {
-		return nil, twirp.InternalError(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
+		return
 	}
-
-	return &v1.RefreshOkResponse{
-		Token:        tokens.AccessToken,
-		RefreshToken: tokens.RefreshToken,
-	}, nil
+	c.JSON(http.StatusOK, gin.H{"data": tokens})
 }
-func (a *AuthCtrl) Authorization(ctx context.Context, req *v1.AuthRequest) (*v1.AuthOKResponse, error) {
-	tokens, err := a.authService.LoginUser(ctx, req.FirstName, req.Password)
+
+func (a *authRoutes) authorization(c *gin.Context) {
+	var r request.Authorization
+	if err := c.ShouldBind(&r); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	tokens, err := a.authService.LoginUser(c.Request.Context(), r.FirstName, r.Password)
 	if err != nil {
-		return nil, twirp.NotFoundError(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
+		return
 	}
 
-	return &v1.AuthOKResponse{
-		Token:        tokens.AccessToken,
-		RefreshToken: tokens.RefreshToken,
-	}, nil
+	c.JSON(http.StatusOK, gin.H{"data": tokens})
 }
 
-func (a *AuthCtrl) Registration(ctx context.Context, req *v1.RegisterRequest) (*v1.RegisterOkResponse, error) {
-	if err := req.Validate(); err != nil {
-		return nil, twirp.InvalidArgument.Error(err.Error())
+func (a *authRoutes) registration(c *gin.Context) {
+	var req request.Registration
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	user := &entity.SecureUser{
@@ -56,18 +65,17 @@ func (a *AuthCtrl) Registration(ctx context.Context, req *v1.RegisterRequest) (*
 			FirstName: req.FirstName,
 			LastName:  req.LastName,
 			Sex:       req.Sex,
-			Age:       int(req.Age),
+			Age:       req.Age,
 			Interests: req.Interests,
 		},
 		Password: req.Password,
 	}
 
-	tokens, err := a.authService.RegisterUser(ctx, user)
+	tokens, err := a.authService.RegisterUser(c.Request.Context(), user)
 	if err != nil {
-		return nil, twirp.InternalError(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
+		return
 	}
-	return &v1.RegisterOkResponse{
-		Token:        tokens.AccessToken,
-		RefreshToken: tokens.RefreshToken,
-	}, nil
+
+	c.JSON(http.StatusOK, gin.H{"data": tokens})
 }

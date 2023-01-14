@@ -1,72 +1,39 @@
 package v1
 
 import (
-	"context"
-	"fmt"
-	"github.com/twitchtv/twirp"
-	v1 "osoc/api/v1"
+	"github.com/gin-gonic/gin"
+	"net/http"
 	"osoc/internal/usecase/userinfo"
 	"osoc/pkg/log"
 	"osoc/pkg/router/middleware/auth/jwt"
 )
 
-type UserCtrl struct {
+type userRoutes struct {
 	logger  log.Logger
 	service userinfo.UserService
 }
 
-func NewUserCtrl(logger log.Logger, service userinfo.UserService) *UserCtrl {
-	return &UserCtrl{
+func newUserRoutes(group *gin.RouterGroup, logger log.Logger, service userinfo.UserService) {
+	u := &userRoutes{
 		logger:  logger,
 		service: service,
 	}
+	group.GET("/user", u.GetUser)
 }
 
-func (u *UserCtrl) GetUser(ctx context.Context, req *v1.UserRequest) (*v1.UserGetResponse, error) {
-	if err := req.Validate(); err != nil {
-		u.logger.Err(err).Msg("error while validate")
-		return nil, twirp.InvalidArgument.Error(err.Error())
-	}
-
+func (u *userRoutes) GetUser(c *gin.Context) {
+	ctx := c.Request.Context()
 	claim, ok := jwt.FromContext(ctx)
 	if !ok {
-		return nil, twirp.InternalErrorWith(fmt.Errorf("error while parse claims"))
+		c.JSON(http.StatusBadRequest, gin.H{"error": http.StatusText(http.StatusBadRequest)})
+		return
 	}
-	fmt.Println(claim, "----")
-	//val := claim["id"]
-	//if !ok {
-	//	return nil, twirp.InternalErrorWith(fmt.Errorf("error while parse id"))
-	//}
-	//id, ok2 := val.(int)
-	//if !ok2 {
-	//	fmt.Println(id, val, ok2, reflect.TypeOf(val))
-	//	return nil, twirp.InternalErrorWith(fmt.Errorf("error while parse id2"))
-	//}
 
-	user, err := u.service.GetUser(ctx, 3)
+	user, err := u.service.GetUser(ctx, claim.ID)
 	if err != nil {
-		return nil, twirp.NotFoundError(err.Error())
+		c.JSON(http.StatusNotFound, gin.H{"error": http.StatusText(http.StatusNotFound)})
+		return
 	}
 
-	usr := &v1.User{
-		Id: uint64(user.ID),
-	}
-
-	return &v1.UserGetResponse{
-		User: usr,
-	}, nil
-}
-
-func (u *UserCtrl) DeleteUser(ctx context.Context, req *v1.UserRequest) (*v1.UserOkResponse, error) {
-	return &v1.UserOkResponse{}, nil
-}
-
-func (u *UserCtrl) UpdateUser(ctx context.Context, req *v1.UserUpdateRequest) (*v1.UserOkResponse, error) {
-	return &v1.UserOkResponse{}, nil
-
-}
-
-func (u *UserCtrl) CreateUser(ctx context.Context, req *v1.UserCreateRequest) (*v1.UserOkResponse, error) {
-	return &v1.UserOkResponse{}, nil
-
+	c.JSON(http.StatusOK, gin.H{"data": user})
 }

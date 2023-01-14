@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	jwtlib "osoc/pkg/jwt"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -49,7 +50,7 @@ func New(opts ...Option) gin.HandlerFunc {
 			return
 		}
 
-		token, err := jwt.Parse(tokenString, keyFunc)
+		token, err := jwt.ParseWithClaims(tokenString, &jwtlib.CustomClaims{}, keyFunc)
 		if err != nil {
 			if _, ok := err.(*jwt.ValidationError); ok {
 				c.String(http.StatusUnauthorized, err.Error())
@@ -69,7 +70,6 @@ func New(opts ...Option) gin.HandlerFunc {
 			return
 		}
 
-		fmt.Println(token.Claims)
 		c.Request = c.Request.WithContext(
 			context.WithValue(c.Request.Context(), claimsContextKey{}, token.Claims),
 		)
@@ -78,8 +78,8 @@ func New(opts ...Option) gin.HandlerFunc {
 	}
 }
 
-func FromContext(ctx context.Context) (jwt.Claims, bool) {
-	v, ok := ctx.Value(claimsContextKey{}).(jwt.Claims)
+func FromContext(ctx context.Context) (*jwtlib.CustomClaims, bool) {
+	v, ok := ctx.Value(claimsContextKey{}).(*jwtlib.CustomClaims)
 	return v, ok
 }
 

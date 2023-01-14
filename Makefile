@@ -17,28 +17,6 @@ help:
 init-utils: ## Init utils for work space
 	go install golang.org/x/tools/cmd/goimports@latest
 
-.PHONY: init
-init: ## Initialize basic proto lib
-	go install \
-    github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
-	github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2 \
-	github.com/google/gnostic/cmd/protoc-gen-openapi \
-	google.golang.org/protobuf/cmd/protoc-gen-go \
-	google.golang.org/grpc/cmd/protoc-gen-go-grpc \
-	github.com/envoyproxy/protoc-gen-validate \
-	github.com/solo-io/gloo/projects/gloo/pkg/api/v1/options/headers
-
-.PHONY: proto-gen
-proto-gen: ## Generate codes from proto files
-	protoc --proto_path=./proto/ \
-	--twirp_out=. \
-	--proto_path=${GOPATH}/pkg/mod/github.com/envoyproxy/protoc-gen-validate@v0.6.7 \
-	--openapi_out=./ \
-	--openapi_opt=default_response=false \
-	--go_out=paths=source_relative:./api/v1 \
-	--validate_out lang=go:. \
-	./proto/*.proto
-
 .PHONY: test
 test: ## Test project.
 	go test -v ./...
@@ -123,3 +101,14 @@ migrate: ## Migration up
 .PHONY: compile
 compile: ## Make binary and docs
 	go build -ldflags="${LDFLAGS}" -o bin/${APP_NAME} cmd/${APP_NAME}/main.go cmd/${APP_NAME}/wire_gen.go
+
+## https://goswagger.io/use/spec.html
+.PHONY: swagger-gen
+swagger-gen: ## Validate swagger spec and generate its JSON version.
+ifneq ($(CI),)
+	swagger generate spec -i ./swagger.yml -o ./swagger/api.swagger.json
+	swagger validate ./swagger/api.swagger.json
+else
+	docker run --rm -it -e GOPATH=${HOME}/go:/go -v ${HOME}:${HOME} -w $(shell pwd) quay.io/goswagger/swagger validate ./swagger.yml
+	docker run --rm -it -e GOPATH=${HOME}/go:/go -v ${HOME}:${HOME} -w $(shell pwd) quay.io/goswagger/swagger generate spec -i ./swagger.yml -o ./swagger/api.swagger.json
+endif

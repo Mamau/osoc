@@ -3,6 +3,7 @@ package serviceprovider
 import (
 	"osoc/internal/config"
 	"osoc/internal/usecase/userinfo"
+	"osoc/pkg/router/middleware/recoverer"
 
 	"github.com/gin-gonic/gin"
 	app "osoc/pkg/application"
@@ -21,6 +22,7 @@ func NewBaseRouter(conf *config.Config, logger log.Logger, version app.BuildVers
 		router.BuildTime(version.Time),
 		router.ReadinessProbes(dm.Healthcheck),
 		router.Middlewares(
+			recoverer.New(),
 			servertiming.New(),
 			timeout.New(),
 			logging.New(

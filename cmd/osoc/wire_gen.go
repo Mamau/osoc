@@ -36,13 +36,11 @@ func newApp() (*application.App, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	repository := user.New(db)
-	service := userinfo.NewService(repository, logger)
-	userCtrl := v1.NewUserCtrl(logger, service)
 	secureRepo := user.NewSecureRepo(db)
 	auth := secure.NewAuth(logger, secureRepo, app)
-	authCtrl := v1.NewAuthCtrl(logger, auth)
-	handler := v1.NewRouter(engine, userCtrl, authCtrl, configConfig, logger)
+	repository := user.New(db)
+	service := userinfo.NewService(repository, logger)
+	handler := v1.NewRouter(engine, configConfig, auth, service, logger)
 	server := serviceprovider.NewHttp(handler, configConfig, logger)
 	promConfig := config.GetPrometheusConfig(configConfig)
 	promServer := serviceprovider.NewPrometheus(promConfig, logger)

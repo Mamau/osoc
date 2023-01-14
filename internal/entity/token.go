@@ -1,6 +1,6 @@
 package entity
 
 type Tokens struct {
-	AccessToken  string
-	RefreshToken string
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
 }

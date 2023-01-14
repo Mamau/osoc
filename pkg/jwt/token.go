@@ -8,7 +8,7 @@ import (
 
 func CreateAccessToken(id int, name string, secret string) (accessToken string, err error) {
 	expires := time.Now().Add(time.Hour)
-	claims := &Claims{
+	claims := &CustomClaims{
 		Name: name,
 		ID:   id,
 		RegisteredClaims: jwt.RegisteredClaims{

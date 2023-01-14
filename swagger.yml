@@ -1,0 +1,89 @@
+swagger: "2.0"
+info:
+  title: OSOC
+  version: 1.0.0
+tags:
+  - name: secure
+    description: Secure endpoints
+  - name: probes
+    description: Probes endpoints
+host: "localhost:8081"
+schemes:
+  - https
+securityDefinitions:
+  bearerAuth:
+    type: apiKey
+    in: header
+    name: Authorization
+    description: JWT Authorization header (e.g. Bearer my-secure-token)
+
+paths:
+  /api/v1/secure/user:
+    get:
+      tags:
+        - secure
+      summary: get user
+      operationId: user
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        200:
+          description: успешный ответ
+          schema:
+            $ref: "#/definitions/user"
+        500:
+          description: Internal error
+
+  /ready:
+    get:
+      tags:
+        - probes
+      description: Indicates whether the service is ready to accept requests
+      operationId: isServiceReady
+      responses:
+        200:
+          description: Service ready
+
+  /live:
+    get:
+      tags:
+        - probes
+      description: Indicates whether the service is operating and should be rebooted if it is not
+      operationId: isServiceAlive
+      responses:
+        200:
+          description: Service alive
+
+  /doc:
+    get:
+      tags:
+        - probes
+      description: Provides API specification
+      operationId: getAPISpecification
+      responses:
+        200:
+          description: API specification in Swagger format
+
+definitions:
+  user:
+    type: object
+    properties:
+      data:
+        type: object
+        properties:
+          first_name:
+            type: string
+          id:
+            type: integer
+          last_name:
+            type: string
+          age:
+            type: integer
+          sex:
+            type: string
+          interests:
+            type: string
+          created_at:
+            type: string
