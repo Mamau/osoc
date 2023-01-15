@@ -14,6 +14,8 @@ import (
 
 type claimsContextKey struct{}
 
+const XUserIDKey = "x-user-id"
+
 func New(opts ...Option) gin.HandlerFunc {
 	o := &options{
 		logger: log.NewDiscardLogger(),
@@ -69,6 +71,15 @@ func New(opts ...Option) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
+		userID, err := jwtlib.ExtractIDFromToken(tokenString, string(o.hmacSecret))
+		if err != nil {
+			o.logger.Err(err).Msg("JWT auth: could not extract user id from token")
+			c.JSON(http.StatusUnauthorized, http.StatusText(http.StatusUnauthorized))
+			c.Abort()
+			return
+		}
+		c.Set(XUserIDKey, userID)
 
 		c.Request = c.Request.WithContext(
 			context.WithValue(c.Request.Context(), claimsContextKey{}, token.Claims),

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"osoc/internal/api/http/v1/request"
 	"osoc/internal/entity"
 	"time"
 
@@ -54,6 +55,33 @@ func (u *Repository) UpdateUser(ctx context.Context, user entity.User) error {
 	}
 
 	return nil
+}
+func (u *Repository) SearchUsers(ctx context.Context, query *request.UserSearch) ([]entity.User, error) {
+	buildQuery := u.db.Builder.
+		Select("id", "first_name", "last_name", "age", "sex", "interests", "created_at").
+		From("users")
+
+	if query.FirstName != "" {
+		buildQuery = buildQuery.Where(squirrel.Eq{"first_name": query.FirstName})
+	}
+	if query.LastName != "" {
+		buildQuery = buildQuery.Where(squirrel.Eq{"last_name": query.LastName})
+	}
+
+	sqlQuery, args, err := buildQuery.ToSql()
+	if err != nil {
+		return nil, err
+	}
+	var users []entity.User
+
+	if err = u.db.SelectContext(ctx, &users, sqlQuery, args...); err != nil {
+		return nil, err
+	}
+	if len(users) == 0 {
+		return nil, entity.ErrNotFound
+	}
+
+	return users, nil
 }
 func (u *Repository) CreateUser(ctx context.Context, user entity.User) error {
 	sqlQuery, args, err := u.db.Builder.Insert("users").

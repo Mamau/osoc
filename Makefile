@@ -54,8 +54,8 @@ finalcheck: wire fmt mod lint test-short swagger-gen ## Make a final complex che
 run: ## Run project for local
 	go run -ldflags="${LDFLAGS}" ./cmd/${APP_NAME}/.
 
-.PHONY: start
-start: ## Init project
+.PHONY: init
+init: ## Init project
 	docker-compose up -d
 	make migrate
 

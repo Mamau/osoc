@@ -85,7 +85,30 @@ func (a *Auth) RegisterUser(ctx context.Context, user *entity.SecureUser) (entit
 		RefreshToken: refreshToken,
 	}, nil
 }
+func (a *Auth) LoginUserByID(ctx context.Context, id int) (entity.Tokens, error) {
+	user, err := a.repo.GetUserById(ctx, id)
+	if err != nil {
+		a.logger.Err(err).Msgf("error while get user by id: %w", err)
+		return entity.Tokens{}, fmt.Errorf("invalid credentials")
+	}
 
+	accessToken, err := jwt.CreateAccessToken(user.ID, user.FirstName, a.config.AppJWTSecret)
+	if err != nil {
+		a.logger.Err(err).Msgf("error while create access token: %w", err)
+		return entity.Tokens{}, fmt.Errorf("invalid credentials")
+	}
+
+	refreshToken, err := jwt.CreateRefreshToken(user.ID, a.config.AppJWTSecret)
+	if err != nil {
+		a.logger.Err(err).Msgf("error while create refresh token: %w", err)
+		return entity.Tokens{}, fmt.Errorf("invalid credentials")
+	}
+
+	return entity.Tokens{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
+}
 func (a *Auth) LoginUser(ctx context.Context, firstName, password string) (entity.Tokens, error) {
 	user, err := a.repo.GetUserByName(ctx, firstName)
 	if err != nil {

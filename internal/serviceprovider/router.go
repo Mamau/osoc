@@ -22,7 +22,9 @@ func NewBaseRouter(conf *config.Config, logger log.Logger, version app.BuildVers
 		router.BuildTime(version.Time),
 		router.ReadinessProbes(dm.Healthcheck),
 		router.Middlewares(
-			recoverer.New(),
+			recoverer.New(
+				recoverer.Logger(logger),
+			),
 			servertiming.New(),
 			timeout.New(),
 			logging.New(

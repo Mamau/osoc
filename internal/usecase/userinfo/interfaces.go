@@ -2,6 +2,7 @@ package userinfo
 
 import (
 	"context"
+	"osoc/internal/api/http/v1/request"
 
 	"osoc/pkg/healthcheck"
 
@@ -13,11 +14,13 @@ type (
 	// UserService -.
 	UserService interface {
 		GetUser(ctx context.Context, id int) (entity.User, error)
+		SearchUser(ctx context.Context, query *request.UserSearch) ([]entity.User, error)
 	}
 	// UserRepo -.
 	UserRepo interface {
 		GetUser(ctx context.Context, id int) (entity.User, error)
 		CreateUser(ctx context.Context, user entity.User) error
+		SearchUsers(ctx context.Context, query *request.UserSearch) ([]entity.User, error)
 		UpdateUser(ctx context.Context, user entity.User) error
 		DeleteUser(ctx context.Context, id int) error
 	}

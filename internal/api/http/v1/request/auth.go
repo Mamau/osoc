@@ -5,8 +5,9 @@ type Refresh struct {
 }
 
 type Authorization struct {
-	FirstName string `json:"first_name" binding:"required"`
-	Password  string `json:"password" binding:"required"`
+	//FirstName string `json:"first_name" binding:"required"`
+	//Password  string `json:"password" binding:"required"`
+	UserID int `json:"id" binding:"required"`
 }
 type Registration struct {
 	FirstName string `json:"first_name" binding:"required"`

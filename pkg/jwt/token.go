@@ -53,7 +53,7 @@ func IsAuthorized(requestToken string, secret string) (bool, error) {
 }
 
 func ExtractIDFromToken(requestToken string, secret string) (int, error) {
-	token, err := jwt.Parse(requestToken, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(requestToken, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -64,11 +64,11 @@ func ExtractIDFromToken(requestToken string, secret string) (int, error) {
 		return 0, err
 	}
 
-	claims, ok := token.Claims.(jwt.MapClaims)
+	claims, ok := token.Claims.(*CustomClaims)
 
 	if !ok && !token.Valid {
 		return 0, fmt.Errorf("invalid Token")
 	}
 
-	return claims["id"].(int), nil
+	return claims.ID, nil
 }

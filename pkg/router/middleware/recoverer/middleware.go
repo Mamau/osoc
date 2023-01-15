@@ -1,9 +1,8 @@
 package recoverer
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"net/http"
 	"osoc/pkg/log"
 )
 
@@ -27,7 +26,8 @@ func New(opts ...Option) gin.HandlerFunc {
 					o.logger.Error().Msgf("panic recovered (%T): %v", x, x)
 				}
 
-				c.String(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+				c.JSON(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+				c.Abort()
 			}
 		}()
 

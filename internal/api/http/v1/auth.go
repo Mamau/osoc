@@ -20,7 +20,7 @@ func newAuthRoutes(group *gin.RouterGroup, logger log.Logger, authService *secur
 		authService: authService,
 	}
 	group.POST("/refresh", a.refresh)
-	group.POST("/authorization", a.authorization)
+	group.POST("/login", a.login)
 	group.POST("/registration", a.registration)
 }
 
@@ -38,13 +38,13 @@ func (a *authRoutes) refresh(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": tokens})
 }
 
-func (a *authRoutes) authorization(c *gin.Context) {
+func (a *authRoutes) login(c *gin.Context) {
 	var r request.Authorization
 	if err := c.ShouldBind(&r); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	tokens, err := a.authService.LoginUser(c.Request.Context(), r.FirstName, r.Password)
+	tokens, err := a.authService.LoginUserByID(c.Request.Context(), r.UserID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": http.StatusText(http.StatusInternalServerError)})
 		return

@@ -7,7 +7,6 @@ import (
 	"osoc/internal/usecase/secure"
 	"osoc/internal/usecase/userinfo"
 	"osoc/pkg/log"
-	"osoc/pkg/router/middleware/auth/jwt"
 )
 
 func NewRouter(
@@ -18,22 +17,15 @@ func NewRouter(
 	logger log.Logger,
 ) http.Handler {
 	commonGroup := engine.Group("/api/v1")
-
 	commonGroup.GET("/", func(c *gin.Context) { c.Status(http.StatusNoContent) })
+
 	{
 		newAuthRoutes(commonGroup, logger, authService)
 	}
 
-	// -------------------
-	// SECURE ROUTES
-	// -------------------
-	secureGroup := commonGroup.Group("/secure")
-	secureGroup.Use(jwt.New(
-		jwt.HMACSecret([]byte(conf.App.AppJWTSecret)),
-		jwt.Logger(logger),
-	))
+	secureGroup := commonGroup.Group("/user")
 	{
-		newUserRoutes(secureGroup, logger, s)
+		newUserRoutes(secureGroup, logger, s, conf)
 	}
 
 	return engine

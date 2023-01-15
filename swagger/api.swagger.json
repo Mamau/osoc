@@ -1,0 +1,397 @@
+{
+  "schemes": [
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "title": "OSOC",
+    "version": "1.0.0"
+  },
+  "host": "localhost:8081",
+  "paths": {
+    "/api/v1/login": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "simple login by userid",
+        "operationId": "login",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success response",
+            "schema": {
+              "$ref": "#/definitions/tokens"
+            }
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/refresh": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "get new token pair by your refresh token",
+        "operationId": "refresh",
+        "parameters": [
+          {
+            "description": "your refresh token",
+            "name": "token",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "$ref": "#/definitions/tokens"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/registration": {
+      "post": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "simple login by userid",
+        "operationId": "registration",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registration"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success response",
+            "schema": {
+              "$ref": "#/definitions/tokens"
+            }
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/user": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "get user by bearer token",
+        "operationId": "personal_user",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "$ref": "#/definitions/user"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authorize"
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/user/search": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "search user by params",
+        "operationId": "search_user",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "first_name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "name": "last_name",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/user"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/api/v1/user/{id}": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "user"
+        ],
+        "summary": "get user by id",
+        "operationId": "user",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "user id",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success response",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "$ref": "#/definitions/user"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/doc": {
+      "get": {
+        "description": "Provides API specification",
+        "tags": [
+          "probes"
+        ],
+        "operationId": "getAPISpecification",
+        "responses": {
+          "200": {
+            "description": "API specification in Swagger format"
+          }
+        }
+      }
+    },
+    "/live": {
+      "get": {
+        "description": "Indicates whether the service is operating and should be rebooted if it is not",
+        "tags": [
+          "probes"
+        ],
+        "operationId": "isServiceAlive",
+        "responses": {
+          "200": {
+            "description": "Service alive"
+          }
+        }
+      }
+    },
+    "/ready": {
+      "get": {
+        "description": "Indicates whether the service is ready to accept requests",
+        "tags": [
+          "probes"
+        ],
+        "operationId": "isServiceReady",
+        "responses": {
+          "200": {
+            "description": "Service ready"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "registration": {
+      "type": "object",
+      "properties": {
+        "age": {
+          "type": "integer"
+        },
+        "interests": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "sex": {
+          "type": "string"
+        }
+      }
+    },
+    "tokens": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "type": "string"
+        },
+        "refreshToken": {
+          "type": "string"
+        }
+      }
+    },
+    "user": {
+      "type": "object",
+      "properties": {
+        "age": {
+          "type": "integer"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "interests": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "sex": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "bearerAuth": {
+      "description": "JWT Authorization header (e.g. Bearer my-secure-token)",
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "tags": [
+    {
+      "description": "User endpoints",
+      "name": "user"
+    },
+    {
+      "description": "Auth routes",
+      "name": "auth"
+    },
+    {
+      "description": "Probes endpoints",
+      "name": "probes"
+    }
+  ]
+}
