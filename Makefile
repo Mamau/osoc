@@ -56,7 +56,8 @@ run: ## Run project for local
 
 .PHONY: init
 init: ## Init project
-	docker-compose up -d
+	docker-compose -f docker-compose.prod.yml -f docker-compose.yml up --build -d
+	sleep 5
 	make migrate
 
 .PHONY: report
