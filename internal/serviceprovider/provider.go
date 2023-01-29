@@ -4,6 +4,7 @@ import (
 	v1 "osoc/internal/api/http/v1"
 	"osoc/internal/config"
 	"osoc/internal/repository/user"
+	"osoc/internal/repository/webdata"
 	"osoc/internal/usecase/secure"
 	"osoc/internal/usecase/userinfo"
 
@@ -27,6 +28,7 @@ var ProviderSet = wire.NewSet(
 	NewMysql,
 	NewRedis,
 	NewPrometheus,
+	webdata.NewWebData,
 	NewLogger,
 	v1.NewRouter,
 	secure.NewAuth,

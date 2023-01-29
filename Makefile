@@ -52,7 +52,13 @@ finalcheck: wire fmt mod lint test-short swagger-gen ## Make a final complex che
 
 .PHONY: run
 run: ## Run project for local
-	go run -ldflags="${LDFLAGS}" ./cmd/${APP_NAME}/.
+	go run -race -ldflags="${LDFLAGS}" ./cmd/${APP_NAME}/.
+	#go run -ldflags="${LDFLAGS}" ./cmd/${APP_NAME}/. 2> trace.out
+
+.PHONY: debug
+debug: ## Run all container without app
+	docker-compose up -d --scale app=0
+	make run
 
 .PHONY: init
 init: ## Init project

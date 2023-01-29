@@ -19,7 +19,8 @@ type (
 	// UserRepo -.
 	UserRepo interface {
 		GetUser(ctx context.Context, id int) (entity.User, error)
-		CreateUser(ctx context.Context, user entity.User) error
+		MultiCreateUser(ctx context.Context, users []entity.SecureUser) error
+		CreateUser(ctx context.Context, user entity.SecureUser) error
 		SearchUsers(ctx context.Context, query *request.UserSearch) ([]entity.User, error)
 		UpdateUser(ctx context.Context, user entity.User) error
 		DeleteUser(ctx context.Context, id int) error

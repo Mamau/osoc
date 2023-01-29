@@ -1,17 +1,17 @@
 package serviceprovider
 
 import (
+	"github.com/gin-gonic/gin"
 	"osoc/internal/config"
 	"osoc/internal/usecase/userinfo"
-	"osoc/pkg/router/middleware/recoverer"
-
-	"github.com/gin-gonic/gin"
 	app "osoc/pkg/application"
 	"osoc/pkg/log"
 	"osoc/pkg/router"
 	"osoc/pkg/router/middleware/logging"
+	"osoc/pkg/router/middleware/recoverer"
 	"osoc/pkg/router/middleware/servertiming"
 	"osoc/pkg/router/middleware/timeout"
+	"time"
 )
 
 func NewBaseRouter(conf *config.Config, logger log.Logger, version app.BuildVersion, dm userinfo.UserDaemon) *gin.Engine {
@@ -26,7 +26,7 @@ func NewBaseRouter(conf *config.Config, logger log.Logger, version app.BuildVers
 				recoverer.Logger(logger),
 			),
 			servertiming.New(),
-			timeout.New(),
+			timeout.New(timeout.Timeout(30*time.Second)),
 			logging.New(
 				logging.Level(conf.App.LogLevel),
 				logging.Env(conf.App.Environment),

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"osoc/internal/config"
+	"osoc/internal/repository/webdata"
 	"osoc/internal/usecase/secure"
 	"osoc/internal/usecase/userinfo"
 	"osoc/pkg/log"
@@ -15,6 +16,7 @@ func NewRouter(
 	authService *secure.Auth,
 	s userinfo.UserService,
 	logger log.Logger,
+	wd *webdata.WebData,
 ) http.Handler {
 	commonGroup := engine.Group("/api/v1")
 	commonGroup.GET("/", func(c *gin.Context) { c.Status(http.StatusNoContent) })
@@ -25,7 +27,7 @@ func NewRouter(
 
 	secureGroup := commonGroup.Group("/user")
 	{
-		newUserRoutes(secureGroup, logger, s, conf)
+		newUserRoutes(secureGroup, logger, s, conf, wd)
 	}
 
 	return engine

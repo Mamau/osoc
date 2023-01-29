@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"osoc/internal/api/http/v1/request"
 	"osoc/internal/config"
+	"osoc/internal/repository/webdata"
 	"osoc/internal/usecase/userinfo"
 	"osoc/pkg/log"
 	"osoc/pkg/router/middleware/auth/jwt"
@@ -14,16 +15,19 @@ import (
 type userRoutes struct {
 	logger  log.Logger
 	service userinfo.UserService
+	wd      *webdata.WebData
 }
 
 // prefix routes - /api/v1/user
-func newUserRoutes(group *gin.RouterGroup, logger log.Logger, service userinfo.UserService, conf *config.Config) {
+func newUserRoutes(group *gin.RouterGroup, logger log.Logger, service userinfo.UserService, conf *config.Config, wd *webdata.WebData) {
 	u := &userRoutes{
 		logger:  logger,
 		service: service,
+		wd:      wd,
 	}
 	group.GET(":id", u.GetUserById)
 	group.GET("/search", u.SearchUser)
+	group.POST("/insert-million", u.InsertMillion)
 
 	// -------------------
 	// SECURE ROUTES (work by jwt token)
@@ -34,6 +38,13 @@ func newUserRoutes(group *gin.RouterGroup, logger log.Logger, service userinfo.U
 	))
 	group.GET("", u.GetUser)
 }
+func (u *userRoutes) InsertMillion(c *gin.Context) {
+	ctx := c.Request.Context()
+	u.wd.InsertMillion(ctx)
+
+	c.JSON(http.StatusOK, gin.H{"data": "million is inserted"})
+}
+
 func (u *userRoutes) SearchUser(c *gin.Context) {
 	var req request.UserSearch
 	if err := c.ShouldBindQuery(&req); err != nil {

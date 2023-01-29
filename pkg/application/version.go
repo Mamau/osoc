@@ -29,10 +29,7 @@ func GetBuildVersion() (BuildVersion, error) {
 
 	var err error
 
-	buildVersion.Time, err = time.Parse(time.RFC3339, buildVersionTime)
-	if err != nil {
-		buildVersion.Time, err = time.Parse(fallbackTimeLayout, buildVersionTime)
-	}
+	buildVersion.Time = time.Now()
 
 	return buildVersion, err
 }

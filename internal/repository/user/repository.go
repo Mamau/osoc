@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"osoc/internal/api/http/v1/request"
 	"osoc/internal/entity"
 	"time"
@@ -62,16 +63,17 @@ func (u *Repository) SearchUsers(ctx context.Context, query *request.UserSearch)
 		From("users")
 
 	if query.FirstName != "" {
-		buildQuery = buildQuery.Where(squirrel.Eq{"first_name": query.FirstName})
+		buildQuery = buildQuery.Where(squirrel.Like{"first_name": fmt.Sprintf("%s%%", query.FirstName)})
 	}
 	if query.LastName != "" {
-		buildQuery = buildQuery.Where(squirrel.Eq{"last_name": query.LastName})
+		buildQuery = buildQuery.Where(squirrel.Like{"last_name": fmt.Sprintf("%s%%", query.LastName)})
 	}
-
+	buildQuery.OrderBy("id")
 	sqlQuery, args, err := buildQuery.ToSql()
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(sqlQuery)
 	var users []entity.User
 
 	if err = u.db.SelectContext(ctx, &users, sqlQuery, args...); err != nil {
@@ -83,10 +85,29 @@ func (u *Repository) SearchUsers(ctx context.Context, query *request.UserSearch)
 
 	return users, nil
 }
-func (u *Repository) CreateUser(ctx context.Context, user entity.User) error {
+func (u *Repository) MultiCreateUser(ctx context.Context, users []entity.SecureUser) error {
+	builder := u.db.Builder.Insert("users").
+		Columns("first_name", "last_name", "age", "sex", "interests", "password", "created_at")
+
+	for _, v := range users {
+		user := v
+		builder.Values(user.FirstName, user.LastName, user.Age, user.Sex, user.Interests, user.Password, time.Now())
+	}
+
+	sqlQuery, args, err := builder.ToSql()
+	if err != nil {
+		return err
+	}
+	if _, err = u.db.ExecContext(ctx, sqlQuery, args...); err != nil {
+		return err
+	}
+
+	return nil
+}
+func (u *Repository) CreateUser(ctx context.Context, user entity.SecureUser) error {
 	sqlQuery, args, err := u.db.Builder.Insert("users").
-		Columns("first_name", "last_name", "age", "sex", "interests", "created_at").
-		Values(user.FirstName, user.LastName, user.Age, user.Sex, user.Interests, time.Now()).
+		Columns("first_name", "last_name", "age", "sex", "interests", "password", "created_at").
+		Values(user.FirstName, user.LastName, user.Age, user.Sex, user.Interests, user.Password, time.Now()).
 		ToSql()
 
 	if err != nil {

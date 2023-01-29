@@ -10,6 +10,7 @@ import (
 	"osoc/internal/api/http/v1"
 	"osoc/internal/config"
 	"osoc/internal/repository/user"
+	"osoc/internal/repository/webdata"
 	"osoc/internal/serviceprovider"
 	"osoc/internal/usecase/secure"
 	"osoc/internal/usecase/userinfo"
@@ -40,7 +41,8 @@ func newApp() (*application.App, func(), error) {
 	auth := secure.NewAuth(logger, secureRepo, app)
 	repository := user.New(db)
 	service := userinfo.NewService(repository, logger)
-	handler := v1.NewRouter(engine, configConfig, auth, service, logger)
+	webData := webdata.NewWebData(repository, logger)
+	handler := v1.NewRouter(engine, configConfig, auth, service, logger, webData)
 	server := serviceprovider.NewHttp(handler, configConfig, logger)
 	promConfig := config.GetPrometheusConfig(configConfig)
 	promServer := serviceprovider.NewPrometheus(promConfig, logger)
