@@ -73,7 +73,7 @@ func (u *Repository) SearchUsers(ctx context.Context, query *request.UserSearch)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(sqlQuery)
+
 	var users []entity.User
 
 	if err = u.db.SelectContext(ctx, &users, sqlQuery, args...); err != nil {
