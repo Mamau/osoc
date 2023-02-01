@@ -14,11 +14,15 @@ import (
 )
 
 type Repository struct {
-	db *mysql.DB
+	db      *mysql.DB
+	slaveDB *mysql.SlaveMysql
 }
 
-func New(db *mysql.DB) *Repository {
-	return &Repository{db: db}
+func New(db *mysql.DB, slaveDB *mysql.SlaveMysql) *Repository {
+	return &Repository{
+		db:      db,
+		slaveDB: slaveDB,
+	}
 }
 
 func (u *Repository) DeleteUser(ctx context.Context, id int) error {
@@ -58,7 +62,7 @@ func (u *Repository) UpdateUser(ctx context.Context, user entity.User) error {
 	return nil
 }
 func (u *Repository) SearchUsers(ctx context.Context, query *request.UserSearch) ([]entity.User, error) {
-	buildQuery := u.db.Builder.
+	buildQuery := u.slaveDB.Builder.
 		Select("id", "first_name", "last_name", "age", "sex", "interests", "created_at").
 		From("users")
 
@@ -91,7 +95,7 @@ func (u *Repository) MultiCreateUser(ctx context.Context, users []entity.SecureU
 
 	for _, v := range users {
 		user := v
-		builder.Values(user.FirstName, user.LastName, user.Age, user.Sex, user.Interests, user.Password, time.Now())
+		builder = builder.Values(user.FirstName, user.LastName, user.Age, user.Sex, user.Interests, user.Password, time.Now())
 	}
 
 	sqlQuery, args, err := builder.ToSql()

@@ -26,6 +26,7 @@ var ProviderSet = wire.NewSet(
 	config.GetRedisConfig,
 	NewHttp,
 	NewMysql,
+	NewSlaveMysql,
 	NewRedis,
 	NewPrometheus,
 	webdata.NewWebData,

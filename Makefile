@@ -77,7 +77,7 @@ endif
 
 .PHONY: watch
 watch: ## Run in live-reload mode
-	make stop
+	#make stop
 	docker-compose up
 
 .PHONY: stop
@@ -119,3 +119,6 @@ else
 	docker run --rm -it -e GOPATH=${HOME}/go:/go -v ${HOME}:${HOME} -w $(shell pwd) quay.io/goswagger/swagger validate ./swagger.yml
 	docker run --rm -it -e GOPATH=${HOME}/go:/go -v ${HOME}:${HOME} -w $(shell pwd) quay.io/goswagger/swagger generate spec -i ./swagger.yml -o ./swagger/api.swagger.json
 endif
+
+#docker run --rm -d -e MYSQL_ROOT_PASSWORD=root -e CLUSTER_NAME=cluster_osoc -p 3307:3306 --name=osoc_node1 --net=osoc_default percona/percona-xtradb-cluster:5.7
+#docker run --rm -d -e MYSQL_ROOT_PASSWORD=root -e CLUSTER_NAME=cluster_osoc -e CLUSTER_JOIN=osoc_node1 -p 3308:3306 --name=osoc_node2 --net=osoc_default percona/percona-xtradb-cluster:5.7
