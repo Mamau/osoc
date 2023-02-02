@@ -120,5 +120,20 @@ else
 	docker run --rm -it -e GOPATH=${HOME}/go:/go -v ${HOME}:${HOME} -w $(shell pwd) quay.io/goswagger/swagger generate spec -i ./swagger.yml -o ./swagger/api.swagger.json
 endif
 
+.PHONY: run-cluster
+run-cluster: ## run mysql cluster
+	docker run --rm -v $(pwd)/my.cnf:/etc/mysql/conf.d/my.cnf -d -e MYSQL_ROOT_PASSWORD=root -e CLUSTER_NAME=cluster_osoc -p 3307:3306 --name=osoc_node1 --net=osoc_default percona/percona-xtradb-cluster:5.7
+	sleep 30
+	docker run --rm -d -e MYSQL_ROOT_PASSWORD=root -e CLUSTER_NAME=cluster_osoc -e CLUSTER_JOIN=osoc_node1 -p 3308:3306 --name=osoc_node2 --net=osoc_default percona/percona-xtradb-cluster:5.7
+	sleep 5
+	docker run --rm -v $(pwd)/my.cnf:/etc/mysql/conf.d/my.cnf -d -e MYSQL_ROOT_PASSWORD=root -e CLUSTER_NAME=cluster_osoc -e CLUSTER_JOIN=osoc_node1 -p 3309:3306 --name=osoc_node3 --net=osoc_default percona/percona-xtradb-cluster:5.7
+	docker exec -i osoc_node1 mysql -uroot -proot -e "create database osoc;"
+	docker run -ti --rm -u $(shell id -u) --workdir=/home --network=${APP_NAME}_default -v $(shell pwd):/home jerray/goose goose -dir=migrations mysql "root:root@(osoc_node1:3306)/osoc" up
+
 #docker run --rm -d -e MYSQL_ROOT_PASSWORD=root -e CLUSTER_NAME=cluster_osoc -p 3307:3306 --name=osoc_node1 --net=osoc_default percona/percona-xtradb-cluster:5.7
 #docker run --rm -d -e MYSQL_ROOT_PASSWORD=root -e CLUSTER_NAME=cluster_osoc -e CLUSTER_JOIN=osoc_node1 -p 3308:3306 --name=osoc_node2 --net=osoc_default percona/percona-xtradb-cluster:5.7
+#test cluster
+#for node1: create database osoc;
+#for migrations
+#MY_HOST=osoc_node1
+#MY_PORT=3306

@@ -62,7 +62,7 @@ func (u *Repository) UpdateUser(ctx context.Context, user entity.User) error {
 	return nil
 }
 func (u *Repository) SearchUsers(ctx context.Context, query *request.UserSearch) ([]entity.User, error) {
-	buildQuery := u.slaveDB.Builder.
+	buildQuery := u.db.Builder.
 		Select("id", "first_name", "last_name", "age", "sex", "interests", "created_at").
 		From("users")
 

@@ -34,7 +34,7 @@ func (w *WebData) InsertMillion(ctx context.Context) {
 	}
 
 	var collectionPack [][]entity.SecureUser
-	maxPack := 1000
+	maxPack := 10
 
 	for i := 0; i < len(data); i += maxPack {
 		end := i + maxPack
