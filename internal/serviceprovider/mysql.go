@@ -8,8 +8,8 @@ import (
 
 func NewSlaveMysql() (*mysql.SlaveMysql, func(), error) {
 	db, err := mysql.Open(
-		mysql.Host("osoc_node1"),
-		mysql.Port(3307),
+		mysql.Host("osoc_node2"),
+		mysql.Port(3306),
 		mysql.User("root"),
 		mysql.Password("root"),
 		mysql.DBName("osoc"),
