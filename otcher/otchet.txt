@@ -6,8 +6,10 @@
 gtid-mode=on
 enforce-gtid-consistency=ON
 в файле конфигурации для mysql и прокинул его через волюм в node1 (мастер)
-4. для установки semi-sync надо установить плагин
+4. для установки semi-sync надо установить плагин для мастера
 INSTALL PLUGIN rpl_semi_sync_master SONAME 'semisync_master.so';
+для слейвов
+INSTALL PLUGIN rpl_semi_sync_slave SONAME 'semisync_slave.so';
 далее
 проверяем
 SELECT PLUGIN_NAME, PLUGIN_STATUS
@@ -21,6 +23,7 @@ SELECT PLUGIN_NAME, PLUGIN_STATUS
 +----------------------+---------------+
 ставим для мастера
 SET GLOBAL rpl_semi_sync_master_enabled = 1;
+SET GLOBAL rpl_semi_sync_master_timeout = 10000;
 для слейвов
 SET GLOBAL rpl_semi_sync_slave_enabled = 1;
 также можно в конфиге выставить для мастера

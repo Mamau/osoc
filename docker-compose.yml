@@ -46,6 +46,9 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
 
+networks:
+  on_network:
+    name: on_network
 volumes:
   grafana-data:
   mysql-data:
