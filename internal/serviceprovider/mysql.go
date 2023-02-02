@@ -30,7 +30,7 @@ func NewSlaveMysql() (*mysql.SlaveMysql, func(), error) {
 func NewMysql(conf config.Mysql) (*mysql.DB, func(), error) {
 	db, err := mysql.Open(
 		mysql.Host("osoc_node1"),
-		mysql.Port(3307),
+		mysql.Port(3306),
 		mysql.User(conf.User),
 		mysql.Password(conf.Password),
 		mysql.DBName(conf.DbName),
