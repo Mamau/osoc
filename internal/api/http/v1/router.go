@@ -30,5 +30,19 @@ func NewRouter(
 		newUserRoutes(secureGroup, logger, s, conf, wd)
 	}
 
+	friendGroup := commonGroup.Group("/friend")
+	//friendGroup.Use(jwt.New(
+	//	jwt.HMACSecret([]byte(conf.App.AppJWTSecret)),
+	//	jwt.Logger(logger),
+	//))
+	{
+		newFriendRoutes(friendGroup, logger)
+	}
+
+	postGroup := commonGroup.Group("/post")
+	{
+		newPostRoutes(postGroup, logger)
+	}
+
 	return engine
 }
