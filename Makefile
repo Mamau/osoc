@@ -77,7 +77,7 @@ endif
 
 .PHONY: watch
 watch: ## Run in live-reload mode
-	#make stop
+	make stop
 	docker-compose up
 
 .PHONY: stop
