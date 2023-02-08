@@ -39,12 +39,7 @@ func newApp() (*application.App, func(), error) {
 	}
 	secureRepo := user.NewSecureRepo(db)
 	auth := secure.NewAuth(logger, secureRepo, app)
-	slaveMysql, cleanup2, err := serviceprovider.NewSlaveMysql()
-	if err != nil {
-		cleanup()
-		return nil, nil, err
-	}
-	repository := user.New(db, slaveMysql)
+	repository := user.New(db)
 	service := userinfo.NewService(repository, logger)
 	webData := webdata.NewWebData(repository, logger)
 	handler := v1.NewRouter(engine, configConfig, auth, service, logger, webData)
@@ -53,7 +48,6 @@ func newApp() (*application.App, func(), error) {
 	promServer := serviceprovider.NewPrometheus(promConfig, logger)
 	applicationApp := createApp(server, promServer, configConfig, logger)
 	return applicationApp, func() {
-		cleanup2()
 		cleanup()
 	}, nil
 }

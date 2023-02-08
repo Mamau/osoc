@@ -14,14 +14,12 @@ import (
 )
 
 type Repository struct {
-	db      *mysql.DB
-	slaveDB *mysql.SlaveMysql
+	db *mysql.DB
 }
 
-func New(db *mysql.DB, slaveDB *mysql.SlaveMysql) *Repository {
+func New(db *mysql.DB) *Repository {
 	return &Repository{
-		db:      db,
-		slaveDB: slaveDB,
+		db: db,
 	}
 }
 
