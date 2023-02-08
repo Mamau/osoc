@@ -14,14 +14,12 @@ import (
 )
 
 type Repository struct {
-	db      *mysql.DB
-	slaveDB *mysql.SlaveMysql
+	db *mysql.DB
 }
 
-func New(db *mysql.DB, slaveDB *mysql.SlaveMysql) *Repository {
+func New(db *mysql.DB) *Repository {
 	return &Repository{
-		db:      db,
-		slaveDB: slaveDB,
+		db: db,
 	}
 }
 
@@ -62,7 +60,7 @@ func (u *Repository) UpdateUser(ctx context.Context, user entity.User) error {
 	return nil
 }
 func (u *Repository) SearchUsers(ctx context.Context, query *request.UserSearch) ([]entity.User, error) {
-	buildQuery := u.slaveDB.Builder.
+	buildQuery := u.db.Builder.
 		Select("id", "first_name", "last_name", "age", "sex", "interests", "created_at").
 		From("users")
 
@@ -80,7 +78,7 @@ func (u *Repository) SearchUsers(ctx context.Context, query *request.UserSearch)
 
 	var users []entity.User
 
-	if err = u.slaveDB.SelectContext(ctx, &users, sqlQuery, args...); err != nil {
+	if err = u.db.SelectContext(ctx, &users, sqlQuery, args...); err != nil {
 		return nil, err
 	}
 	if len(users) == 0 {
@@ -125,7 +123,7 @@ func (u *Repository) CreateUser(ctx context.Context, user entity.SecureUser) err
 	return nil
 }
 func (u *Repository) GetUser(ctx context.Context, id int) (entity.User, error) {
-	sqlQuery, args, err := u.slaveDB.Builder.
+	sqlQuery, args, err := u.db.Builder.
 		Select("id", "first_name", "last_name", "age", "sex", "interests", "created_at").
 		From("users").
 		Where(squirrel.Eq{"id": id}).
@@ -137,7 +135,7 @@ func (u *Repository) GetUser(ctx context.Context, id int) (entity.User, error) {
 
 	var user entity.User
 
-	err = u.slaveDB.GetContext(ctx, &user, sqlQuery, args...)
+	err = u.db.GetContext(ctx, &user, sqlQuery, args...)
 
 	if errors.Is(err, sql.ErrNoRows) {
 		return entity.User{}, entity.ErrNotFound
