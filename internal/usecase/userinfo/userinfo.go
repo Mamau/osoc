@@ -16,6 +16,7 @@ type Service struct {
 func NewService(repo UserRepo, logger log.Logger) *Service {
 	return &Service{repo: repo, logger: logger}
 }
+
 func (s *Service) SearchUser(ctx context.Context, query *request.UserSearch) ([]entity.User, error) {
 	users, err := s.repo.SearchUsers(ctx, query)
 	if err != nil {

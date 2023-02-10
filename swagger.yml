@@ -83,7 +83,7 @@ paths:
       operationId: login
       parameters:
         - in: body
-          name: id
+          name: body
           schema:
             type: object
             properties:
@@ -203,7 +203,7 @@ paths:
         - application/json
       parameters:
         - in: body
-          name: id
+          name: body
           schema:
             type: object
             required:

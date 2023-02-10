@@ -16,6 +16,11 @@ type (
 		GetUser(ctx context.Context, id int) (entity.User, error)
 		SearchUser(ctx context.Context, query *request.UserSearch) ([]entity.User, error)
 	}
+	// FriendsService -.
+	FriendsService interface {
+		AddFriend(ctx context.Context, userId int, friendId int) error
+	}
+
 	// UserRepo -.
 	UserRepo interface {
 		GetUser(ctx context.Context, id int) (entity.User, error)

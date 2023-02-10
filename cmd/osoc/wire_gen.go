@@ -9,9 +9,13 @@ package main
 import (
 	"osoc/internal/api/http/v1"
 	"osoc/internal/config"
+	"osoc/internal/repository/friend"
+	"osoc/internal/repository/post"
 	"osoc/internal/repository/user"
 	"osoc/internal/repository/webdata"
 	"osoc/internal/serviceprovider"
+	"osoc/internal/usecase/friends"
+	"osoc/internal/usecase/posts"
 	"osoc/internal/usecase/secure"
 	"osoc/internal/usecase/userinfo"
 	"osoc/pkg/application"
@@ -41,8 +45,12 @@ func newApp() (*application.App, func(), error) {
 	auth := secure.NewAuth(logger, secureRepo, app)
 	repository := user.New(db)
 	service := userinfo.NewService(repository, logger)
+	friendRepository := friend.New(db)
+	friendsService := friends.NewService(friendRepository, repository, logger)
+	postRepository := post.New(db)
+	postsService := posts.NewService(postRepository, repository, logger)
 	webData := webdata.NewWebData(repository, logger)
-	handler := v1.NewRouter(engine, configConfig, auth, service, logger, webData)
+	handler := v1.NewRouter(engine, configConfig, auth, service, friendsService, postsService, logger, webData)
 	server := serviceprovider.NewHttp(handler, configConfig, logger)
 	promConfig := config.GetPrometheusConfig(configConfig)
 	promServer := serviceprovider.NewPrometheus(promConfig, logger)
