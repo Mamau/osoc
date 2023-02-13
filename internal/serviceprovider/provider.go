@@ -32,6 +32,7 @@ var ProviderSet = wire.NewSet(
 	config.GetAppConfig,
 	config.GetMysqlConfig,
 	config.GetRedisConfig,
+	post.NewCacheRepository,
 	NewHttp,
 	NewMysql,
 	NewRedis,

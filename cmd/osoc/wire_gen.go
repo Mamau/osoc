@@ -48,14 +48,22 @@ func newApp() (*application.App, func(), error) {
 	friendRepository := friend.New(db)
 	friendsService := friends.NewService(friendRepository, repository, logger)
 	postRepository := post.New(db)
-	postsService := posts.NewService(postRepository, repository, logger)
+	redis := config.GetRedisConfig(configConfig)
+	client, cleanup2, err := serviceprovider.NewRedis(redis, logger)
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
+	cache := post.NewCacheRepository(client, logger)
+	postsService := posts.NewService(postRepository, repository, logger, cache)
 	webData := webdata.NewWebData(repository, logger)
-	handler := v1.NewRouter(engine, configConfig, auth, service, friendsService, postsService, logger, webData)
+	handler := v1.NewRouter(engine, configConfig, auth, service, friendsService, postsService, logger, webData, cache)
 	server := serviceprovider.NewHttp(handler, configConfig, logger)
 	promConfig := config.GetPrometheusConfig(configConfig)
 	promServer := serviceprovider.NewPrometheus(promConfig, logger)
 	applicationApp := createApp(server, promServer, configConfig, logger)
 	return applicationApp, func() {
+		cleanup2()
 		cleanup()
 	}, nil
 }

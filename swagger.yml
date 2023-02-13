@@ -222,6 +222,37 @@ paths:
                 $ref: "#/definitions/PostId"
         500:
           description: Internal error
+  /api/v1/post/feed:
+    get:
+      tags:
+        - post
+      summary: post list
+      operationId: post_feed
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: "offset"
+          type: string
+          required: false
+        - in: query
+          name: "limit"
+          type: string
+          required: false
+      responses:
+        200:
+          description: success response
+          schema:
+            type: object
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: "#/definitions/Post"
+        404:
+          description: Not found
+        500:
+          description: Internal error
   /api/v1/post/update:
     put:
       tags:
