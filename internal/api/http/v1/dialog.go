@@ -19,8 +19,8 @@ func newDialogRoutes(group *gin.RouterGroup, l log.Logger, dp DialogProvider) {
 		dialogProvider: dp,
 	}
 
-	group.GET("/dialog/:user_id/list", d.list)
-	group.POST("/dialog/:user_id/send", d.send)
+	group.GET("/:user_id/list", d.list)
+	group.POST("/:user_id/send", d.send)
 }
 
 func (d *dialogRoutes) list(c *gin.Context) {
@@ -30,7 +30,7 @@ func (d *dialogRoutes) list(c *gin.Context) {
 		return
 	}
 	userID := c.GetInt(jwt.XUserIDKey)
-	messageList, err := d.dialogProvider.Messages(c.Request.Context(), userID)
+	messageList, err := d.dialogProvider.Messages(c.Request.Context(), userID, req.UserID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -47,13 +47,13 @@ func (d *dialogRoutes) send(c *gin.Context) {
 	}
 
 	var dialogMessage request.SendDialogMessage
-	if err := c.ShouldBindUri(&dialogMessage); err != nil {
+	if err := c.ShouldBindJSON(&dialogMessage); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	userID := c.GetInt(jwt.XUserIDKey)
-	if err := d.dialogProvider.SaveMessage(c.Request.Context(), userID, req.UserID, dialogMessage.Text); err != nil {
+	if err := d.dialogProvider.SaveMessage(c.Request.Context(), req.UserID, userID, dialogMessage.Text); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

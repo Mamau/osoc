@@ -94,7 +94,6 @@ func (r *Repository) AddPost(ctx context.Context, post entity.Post) (int, error)
 	}
 
 	return int(id), nil
-
 }
 func (r *Repository) Feeds(ctx context.Context, userId int, limit int, offset int) ([]entity.Post, error) {
 	sqlQuery, args, err := r.db.Builder.

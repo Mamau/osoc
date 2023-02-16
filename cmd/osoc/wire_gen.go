@@ -9,11 +9,13 @@ package main
 import (
 	"osoc/internal/api/http/v1"
 	"osoc/internal/config"
+	"osoc/internal/repository/dialog"
 	"osoc/internal/repository/friend"
 	"osoc/internal/repository/post"
 	"osoc/internal/repository/user"
 	"osoc/internal/repository/webdata"
 	"osoc/internal/serviceprovider"
+	dialog2 "osoc/internal/usecase/dialog"
 	"osoc/internal/usecase/friends"
 	"osoc/internal/usecase/posts"
 	"osoc/internal/usecase/secure"
@@ -57,7 +59,9 @@ func newApp() (*application.App, func(), error) {
 	cache := post.NewCacheRepository(client, logger)
 	postsService := posts.NewService(postRepository, repository, logger, cache)
 	webData := webdata.NewWebData(repository, logger)
-	handler := v1.NewRouter(engine, configConfig, auth, service, friendsService, postsService, logger, webData, cache)
+	dialogRepository := dialog.New(db)
+	dialogService := dialog2.NewService(logger, dialogRepository)
+	handler := v1.NewRouter(engine, configConfig, auth, service, friendsService, postsService, logger, webData, cache, dialogService)
 	server := serviceprovider.NewHttp(handler, configConfig, logger)
 	promConfig := config.GetPrometheusConfig(configConfig)
 	promServer := serviceprovider.NewPrometheus(promConfig, logger)

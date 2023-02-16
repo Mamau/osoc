@@ -9,18 +9,18 @@ import (
 
 type Service struct {
 	logger     log.Logger
-	repository MessageProvider
+	repository MessageStorage
 }
 
-func NewService(l log.Logger, r MessageProvider) *Service {
+func NewService(l log.Logger, r MessageStorage) *Service {
 	return &Service{
 		logger:     l,
 		repository: r,
 	}
 }
 
-func (s *Service) Messages(ctx context.Context, userID int) ([]entity.Message, error) {
-	data, err := s.repository.GetList(ctx, userID)
+func (s *Service) Messages(ctx context.Context, authorID int, userID int) ([]entity.Message, error) {
+	data, err := s.repository.GetList(ctx, authorID, userID)
 	if err != nil {
 		s.logger.Err(err).Msg("error while get messages")
 		return nil, errors.SomethingWentWrong

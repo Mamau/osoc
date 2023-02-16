@@ -31,6 +31,6 @@ type (
 	// DialogProvider -.
 	DialogProvider interface {
 		SaveMessage(ctx context.Context, userID int, authorID int, text string) error
-		Messages(ctx context.Context, userID int) ([]entity.Message, error)
+		Messages(ctx context.Context, authorID int, userID int) ([]entity.Message, error)
 	}
 )

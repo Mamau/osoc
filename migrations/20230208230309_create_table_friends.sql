@@ -6,7 +6,6 @@ CREATE TABLE IF NOT EXISTS friends(
     INDEX idx_friend_id (friend_id),
     INDEX idx_user_id (user_id)
     );
-
 -- +goose StatementEnd
 
 -- +goose Down

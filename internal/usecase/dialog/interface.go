@@ -5,11 +5,11 @@ import (
 	"osoc/internal/entity"
 )
 
-//go:generate mockgen -source=interfaces.go -destination=../../mocks/message.go -package=mocks
+//go:generate mockgen -source=interfaces.go -destination=../../mocks/message_store.go -package=mocks
 type (
-	// MessageProvider -.
-	MessageProvider interface {
+	// MessageStorage -.
+	MessageStorage interface {
 		Save(ctx context.Context, message entity.Message) error
-		GetList(ctx context.Context, userID int) ([]entity.Message, error)
+		GetList(ctx context.Context, authorID int, userID int) ([]entity.Message, error)
 	}
 )
