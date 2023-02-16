@@ -4,17 +4,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"osoc/internal/api/http/v1/request"
-	"osoc/internal/usecase/friends"
 	"osoc/pkg/log"
 	"osoc/pkg/router/middleware/auth/jwt"
 )
 
 type friendRoutes struct {
 	logger  log.Logger
-	service friends.FrienderService
+	service FriendService
 }
 
-func newFriendRoutes(group *gin.RouterGroup, l log.Logger, fs friends.FrienderService) {
+func newFriendRoutes(group *gin.RouterGroup, l log.Logger, fs FriendService) {
 	f := &friendRoutes{
 		logger:  l,
 		service: fs,

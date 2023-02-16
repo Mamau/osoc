@@ -18,8 +18,9 @@ import (
 
 var ProviderSet = wire.NewSet(
 	wire.Bind(new(userinfo.UserService), new(*userinfo.Service)), userinfo.NewService,
-	wire.Bind(new(friends.FrienderService), new(*friends.Service)), friends.NewService,
-	wire.Bind(new(posts.PostService), new(*posts.Service)), posts.NewService,
+	wire.Bind(new(v1.FriendService), new(*friends.Service)), friends.NewService,
+	wire.Bind(new(v1.PostService), new(*posts.Service)), posts.NewService,
+	wire.Bind(new(v1.PostCache), new(*post.Cache)), post.NewCacheRepository,
 	wire.Bind(new(userinfo.UserRepo), new(*user.Repository)), user.New,
 	wire.Bind(new(friends.FriendRepo), new(*friend.Repository)), friend.New,
 	wire.Bind(new(posts.PostRepo), new(*post.Repository)), post.New,
@@ -32,7 +33,6 @@ var ProviderSet = wire.NewSet(
 	config.GetAppConfig,
 	config.GetMysqlConfig,
 	config.GetRedisConfig,
-	post.NewCacheRepository,
 	NewHttp,
 	NewMysql,
 	NewRedis,

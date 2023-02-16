@@ -191,6 +191,56 @@ paths:
           description: Not found
         500:
           description: Internal error
+  /api/v1/dialog/{user_id}/list:
+    get:
+      tags:
+        - dialog
+      summary: create post
+      operationId: dialog_list
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          required: true
+          name: user_id
+          type: string
+      responses:
+        200:
+          description: success response
+        500:
+          description: Internal error
+  /api/v1/dialog/{user_id}/send:
+    post:
+      tags:
+        - dialog
+      summary: send dialog message
+      operationId: dialog_send
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          required: true
+          name: user_id
+          type: string
+        - in: body
+          name: text
+          schema:
+            type: object
+            required:
+              - text
+            properties:
+              text:
+                $ref: "#/definitions/DialogMessageText"
+          required: true
+      responses:
+        200:
+          description: success response
+        500:
+          description: Internal error
   /api/v1/post/create:
     post:
       tags:
@@ -370,6 +420,23 @@ paths:
           description: API specification in Swagger format
 
 definitions:
+  DialogMessage:
+    type: object
+    required:
+      - from
+      - to
+      - text
+    properties:
+      from:
+        $ref: "#/definitions/UserId"
+      to:
+        $ref: "#/definitions/UserId"
+      text:
+        $ref: "#/definitions/DialogMessageText"
+  DialogMessageText:
+    type: string
+    description: "Текст сообщения"
+    example: "Привет, как дела?"
   registration:
     type: object
     properties:

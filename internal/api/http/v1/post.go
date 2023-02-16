@@ -4,19 +4,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"osoc/internal/api/http/v1/request"
-	"osoc/internal/repository/post"
-	"osoc/internal/usecase/posts"
 	"osoc/pkg/log"
 	"osoc/pkg/router/middleware/auth/jwt"
 )
 
 type postRoutes struct {
 	logger      log.Logger
-	postService posts.PostService
-	cache       *post.Cache
+	postService PostService
+	cache       PostCache
 }
 
-func newPostRoutes(group *gin.RouterGroup, l log.Logger, ps posts.PostService, cache *post.Cache) {
+func newPostRoutes(group *gin.RouterGroup, l log.Logger, ps PostService, cache PostCache) {
 	p := &postRoutes{
 		logger:      l,
 		postService: ps,
