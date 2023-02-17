@@ -59,7 +59,14 @@ func newApp() (*application.App, func(), error) {
 	cache := post.NewCacheRepository(client, logger)
 	postsService := posts.NewService(postRepository, repository, logger, cache)
 	webData := webdata.NewWebData(repository, logger)
-	dialogRepository := dialog.New(db)
+	proxyMysql := config.GetProxyMysqlConfig(configConfig)
+	mysqlProxyMysql, cleanup3, err := serviceprovider.NewProxyMysql(proxyMysql)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	dialogRepository := dialog.New(db, mysqlProxyMysql)
 	dialogService := dialog2.NewService(logger, dialogRepository)
 	handler := v1.NewRouter(engine, configConfig, auth, service, friendsService, postsService, logger, webData, cache, dialogService)
 	server := serviceprovider.NewHttp(handler, configConfig, logger)
@@ -67,6 +74,7 @@ func newApp() (*application.App, func(), error) {
 	promServer := serviceprovider.NewPrometheus(promConfig, logger)
 	applicationApp := createApp(server, promServer, configConfig, logger)
 	return applicationApp, func() {
+		cleanup3()
 		cleanup2()
 		cleanup()
 	}, nil

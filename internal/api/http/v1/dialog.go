@@ -53,6 +53,7 @@ func (d *dialogRoutes) send(c *gin.Context) {
 	}
 
 	userID := c.GetInt(jwt.XUserIDKey)
+
 	if err := d.dialogProvider.SaveMessage(c.Request.Context(), req.UserID, userID, dialogMessage.Text); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

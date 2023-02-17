@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS messages
     user_id  INT NOT NULL,
     author_id  INT NOT NULL,
     created_at TIMESTAMP    NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES osoc.users(id),
-    FOREIGN KEY (author_id) REFERENCES osoc.users(id)
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (author_id) REFERENCES users(id)
     );
 -- +goose StatementEnd
 

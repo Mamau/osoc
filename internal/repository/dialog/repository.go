@@ -2,6 +2,7 @@ package dialog
 
 import (
 	"context"
+	"fmt"
 	"github.com/Masterminds/squirrel"
 	"osoc/internal/entity"
 	"osoc/pkg/mysql"
@@ -11,33 +12,35 @@ import (
 const maxMessageLimit = 1000
 
 type Repository struct {
-	db *mysql.DB
+	db      *mysql.DB
+	proxyDB *mysql.ProxyMysql
 }
 
-func New(db *mysql.DB) *Repository {
+func New(db *mysql.DB, proxyDB *mysql.ProxyMysql) *Repository {
 	return &Repository{
-		db: db,
+		db:      db,
+		proxyDB: proxyDB,
 	}
 }
 
 func (r *Repository) Save(ctx context.Context, message entity.Message) error {
-	sqlQuery, args, err := r.db.Builder.Insert("messages").
-		Columns("text", "user_id", "author_id", "created_at").
-		Values(message.Text, message.UserID, message.AuthorID, time.Now()).
+	sqlQuery, args, err := r.proxyDB.Builder.Insert("messages").
+		Columns("user_id", "author_id", "text", "created_at").
+		Values(message.UserID, message.AuthorID, message.Text, time.Now()).
 		ToSql()
-
+	fmt.Println(sqlQuery, "--")
 	if err != nil {
 		return err
 	}
 
-	if _, err = r.db.ExecContext(ctx, sqlQuery, args...); err != nil {
+	if _, err = r.proxyDB.ExecContext(ctx, sqlQuery, args...); err != nil {
 		return err
 	}
 
 	return nil
 }
 func (r *Repository) GetList(ctx context.Context, authorID int, userID int) ([]entity.Message, error) {
-	sqlQuery, args, err := r.db.Builder.
+	sqlQuery, args, err := r.proxyDB.Builder.
 		Select("id", "text", "user_id", "author_id", "created_at").
 		From("messages").
 		Where(
@@ -60,7 +63,7 @@ func (r *Repository) GetList(ctx context.Context, authorID int, userID int) ([]e
 	}
 
 	data := make([]entity.Message, 0, maxMessageLimit)
-	if err = r.db.SelectContext(ctx, &data, sqlQuery, args...); err != nil {
+	if err = r.proxyDB.SelectContext(ctx, &data, sqlQuery, args...); err != nil {
 		return nil, err
 	}
 	if len(data) == 0 {

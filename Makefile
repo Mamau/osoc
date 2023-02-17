@@ -66,6 +66,10 @@ init: ## Init project
 	sleep 5
 	make migrate
 
+.PHONY: run-with-shards
+run-with-shards: ## Run project with shards
+	docker-compose -f docker-compose.shard.yml -f docker-compose.yml up --build --scale mysql=0
+
 .PHONY: report
 report: ## Generate report by pprof. usage: make report type=heap|profile|block|mutex|trace
 	curl -s http://${APP_HOST}:${APP_PORT}/debug/pprof/$(type) > ./$(type).out
@@ -100,6 +104,15 @@ rebuild: ## Rebuild by Docker Compose
 .PHONY: goose
 goose: ## Work with migration
 	docker run -ti --rm -u $(shell id -u) --workdir=/home --network=${APP_NAME}_default -v $(shell pwd):/home jerray/goose goose -dir=migrations mysql "$(MY_USER):$(MY_PASSWORD)@($(MY_HOST):$(MY_PORT))/$(MY_DB_NAME)?parseTime=$(MY_PARSE_TIME)" $(cmd)
+
+.PHONY: goose-shard
+goose-shard: ## Work with migration
+	docker run -ti --rm -u $(shell id -u) --workdir=/home --network=${APP_NAME}_default -v $(shell pwd):/home jerray/goose goose -dir=migrations mysql "test:pzjqUkMnc7vfNHET@($(shard):3306)/test?parseTime=true" $(cmd)
+
+.PHONY: migrate-shard
+migrate-shard: ## Migration up
+	make goose-shard shard="db-node-1" cmd="up"
+	make goose-shard shard="db-node-2" cmd="up"
 
 .PHONY: migrate
 migrate: ## Migration up

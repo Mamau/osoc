@@ -11,6 +11,7 @@ type Config struct {
 	App        App
 	Prometheus PromConfig
 	Mysql      Mysql
+	ProxyMysql ProxyMysql
 	Redis      Redis
 }
 

@@ -5,4 +5,5 @@ bin
 coverage.out
 vendor
 tmp
+tmp2
 .netrc
