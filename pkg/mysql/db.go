@@ -15,6 +15,9 @@ type DB struct {
 	// Consider renaming to StmtBuilder or StatementBuilder to make it obvious.
 	Builder squirrel.StatementBuilderType
 }
+type ProxyMysql struct {
+	*DB
+}
 
 func Open(opts ...Option) (*DB, error) {
 	o := &options{

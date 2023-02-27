@@ -17,6 +17,11 @@ services:
     volumes:
       - .:/app
 
+  redis:
+    image: redis
+    ports:
+      - 6379:${RE_PORT}
+
   mysql:
     image: mysql:5.7
     restart: always
@@ -46,9 +51,6 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
 
-networks:
-  on_network:
-    name: on_network
 volumes:
   grafana-data:
   mysql-data:

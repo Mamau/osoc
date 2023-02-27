@@ -9,9 +9,15 @@ package main
 import (
 	"osoc/internal/api/http/v1"
 	"osoc/internal/config"
+	"osoc/internal/repository/dialog"
+	"osoc/internal/repository/friend"
+	"osoc/internal/repository/post"
 	"osoc/internal/repository/user"
 	"osoc/internal/repository/webdata"
 	"osoc/internal/serviceprovider"
+	dialog2 "osoc/internal/usecase/dialog"
+	"osoc/internal/usecase/friends"
+	"osoc/internal/usecase/posts"
 	"osoc/internal/usecase/secure"
 	"osoc/internal/usecase/userinfo"
 	"osoc/pkg/application"
@@ -41,13 +47,35 @@ func newApp() (*application.App, func(), error) {
 	auth := secure.NewAuth(logger, secureRepo, app)
 	repository := user.New(db)
 	service := userinfo.NewService(repository, logger)
+	friendRepository := friend.New(db)
+	friendsService := friends.NewService(friendRepository, repository, logger)
+	postRepository := post.New(db)
+	redis := config.GetRedisConfig(configConfig)
+	client, cleanup2, err := serviceprovider.NewRedis(redis, logger)
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
+	cache := post.NewCacheRepository(client, logger)
+	postsService := posts.NewService(postRepository, repository, logger, cache)
 	webData := webdata.NewWebData(repository, logger)
-	handler := v1.NewRouter(engine, configConfig, auth, service, logger, webData)
+	proxyMysql := config.GetProxyMysqlConfig(configConfig)
+	mysqlProxyMysql, cleanup3, err := serviceprovider.NewProxyMysql(proxyMysql)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	dialogRepository := dialog.New(db, mysqlProxyMysql)
+	dialogService := dialog2.NewService(logger, dialogRepository)
+	handler := v1.NewRouter(engine, configConfig, auth, service, friendsService, postsService, logger, webData, cache, dialogService)
 	server := serviceprovider.NewHttp(handler, configConfig, logger)
 	promConfig := config.GetPrometheusConfig(configConfig)
 	promServer := serviceprovider.NewPrometheus(promConfig, logger)
 	applicationApp := createApp(server, promServer, configConfig, logger)
 	return applicationApp, func() {
+		cleanup3()
+		cleanup2()
 		cleanup()
 	}, nil
 }
