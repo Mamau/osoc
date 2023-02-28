@@ -56,8 +56,8 @@ services:
     volumes:
       - ./rabbit-mq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
     ports:
-      - "8080:15672"
-      - "5000:5673"
+      - "15672:15672"
+      - ${RA_PORT}:${RA_PORT}
     healthcheck:
       test: [ "CMD", "rabbitmqctl", "status" ]
       interval: 5s

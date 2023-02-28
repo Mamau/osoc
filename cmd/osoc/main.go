@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"osoc/internal/config"
+	"osoc/internal/usecase/posts"
 	"osoc/pkg/application"
 	"osoc/pkg/log"
 	"osoc/pkg/transport/http"
@@ -16,6 +17,7 @@ func createApp(
 	prom *prom.Server,
 	c *config.Config,
 	logger log.Logger,
+	postConsumer *posts.Consumer,
 ) *application.App {
 	return application.New(
 		application.ID(id),
@@ -25,6 +27,9 @@ func createApp(
 		application.Servers(
 			hs,
 			prom,
+		),
+		application.Daemons(
+			postConsumer,
 		),
 	)
 }

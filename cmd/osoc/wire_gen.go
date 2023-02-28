@@ -21,6 +21,8 @@ import (
 	"osoc/internal/usecase/secure"
 	"osoc/internal/usecase/userinfo"
 	"osoc/pkg/application"
+	"osoc/pkg/broker/rabbit/consumer"
+	"osoc/pkg/broker/rabbit/producer"
 )
 
 // Injectors from wire.go:
@@ -57,7 +59,9 @@ func newApp() (*application.App, func(), error) {
 		return nil, nil, err
 	}
 	cache := post.NewCacheRepository(client, logger)
-	postsService := posts.NewService(postRepository, repository, logger, cache)
+	rabbit := config.GetRabbitConfig(configConfig)
+	rmqProducer := producer.New(rabbit, logger)
+	postsService := posts.NewService(postRepository, repository, logger, cache, rabbit, rmqProducer)
 	webData := webdata.NewWebData(repository, logger)
 	proxyMysql := config.GetProxyMysqlConfig(configConfig)
 	mysqlProxyMysql, cleanup3, err := serviceprovider.NewProxyMysql(proxyMysql)
@@ -72,7 +76,9 @@ func newApp() (*application.App, func(), error) {
 	server := serviceprovider.NewHttp(handler, configConfig, logger)
 	promConfig := config.GetPrometheusConfig(configConfig)
 	promServer := serviceprovider.NewPrometheus(promConfig, logger)
-	applicationApp := createApp(server, promServer, configConfig, logger)
+	rmqConsumer := consumer.New(logger, rabbit)
+	postsConsumer := posts.NewConsumer(logger, rmqConsumer, rabbit, repository)
+	applicationApp := createApp(server, promServer, configConfig, logger, postsConsumer)
 	return applicationApp, func() {
 		cleanup3()
 		cleanup2()
