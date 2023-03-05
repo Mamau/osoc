@@ -2,28 +2,36 @@ package posts
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"osoc/internal/api/http/v1/request"
+	"osoc/internal/config"
 	"osoc/internal/entity"
 	"osoc/internal/errors"
 	"osoc/internal/repository/post"
 	"osoc/internal/usecase/userinfo"
+	"osoc/pkg/broker/rabbit/producer"
 	"osoc/pkg/log"
 	"time"
 )
 
 type Service struct {
-	postRepo PostRepo
-	userRepo userinfo.UserRepo
-	logger   log.Logger
-	cache    *post.Cache
+	postRepo     PostRepo
+	userRepo     userinfo.UserRepo
+	logger       log.Logger
+	cache        *post.Cache
+	rabbitConfig config.Rabbit
+	producer     producer.RMQProducer
 }
 
-func NewService(repo PostRepo, ur userinfo.UserRepo, logger log.Logger, cache *post.Cache) *Service {
+func NewService(repo PostRepo, ur userinfo.UserRepo, logger log.Logger, cache *post.Cache, rc config.Rabbit, pr producer.RMQProducer) *Service {
 	return &Service{
-		postRepo: repo,
-		userRepo: ur,
-		logger:   logger,
-		cache:    cache,
+		postRepo:     repo,
+		userRepo:     ur,
+		logger:       logger,
+		cache:        cache,
+		rabbitConfig: rc,
+		producer:     pr,
 	}
 }
 func (s *Service) PostList(ctx context.Context, userID int, feeds request.Feeds) ([]entity.Post, error) {
@@ -87,6 +95,14 @@ func (s *Service) CreatePost(ctx context.Context, userID int, text string) error
 	if err := s.cache.Save(ctx, userID, p); err != nil {
 		s.logger.Err(err).Msg("error save post to cache")
 	}
+
+	data, err := json.Marshal(p)
+	if err != nil {
+		s.logger.Err(err).Msg("error while marshal post for rabbit")
+		return errors.SomethingWentWrong
+	}
+
+	s.producer.PublishMessage(fmt.Sprintf("%s.%d", s.rabbitConfig.PostChannel, userID), "application/json", data)
 
 	return nil
 }

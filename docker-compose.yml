@@ -51,6 +51,19 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
 
+  rabbitmq:
+    image: 'rabbitmq:3-management'
+    volumes:
+      - ./rabbit-mq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    ports:
+      - "15672:15672"
+      - ${RA_PORT}:${RA_PORT}
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status" ]
+      interval: 5s
+      timeout: 15s
+      retries: 5
+
 volumes:
   grafana-data:
   mysql-data:

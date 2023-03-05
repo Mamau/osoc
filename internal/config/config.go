@@ -13,6 +13,7 @@ type Config struct {
 	Mysql      Mysql
 	ProxyMysql ProxyMysql
 	Redis      Redis
+	Rabbit     Rabbit
 }
 
 // GetConfig - получает конфиг файла на основе переменных окружения

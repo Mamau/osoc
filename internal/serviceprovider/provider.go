@@ -13,6 +13,8 @@ import (
 	"osoc/internal/usecase/posts"
 	"osoc/internal/usecase/secure"
 	"osoc/internal/usecase/userinfo"
+	"osoc/pkg/broker/rabbit/consumer"
+	"osoc/pkg/broker/rabbit/producer"
 
 	"github.com/google/wire"
 	"osoc/pkg/application"
@@ -35,10 +37,15 @@ var ProviderSet = wire.NewSet(
 	config.GetPrometheusConfig,
 	config.GetConfig,
 	config.GetAppConfig,
+	config.GetRabbitConfig,
 	config.GetMysqlConfig,
 	config.GetProxyMysqlConfig,
 	config.GetRedisConfig,
+	NewRabbitConnection,
 	NewHttp,
+	producer.New,
+	consumer.New,
+	posts.NewConsumer,
 	NewMysql,
 	NewProxyMysql,
 	NewRedis,

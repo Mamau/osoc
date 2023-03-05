@@ -23,6 +23,7 @@ type (
 
 	// UserRepo -.
 	UserRepo interface {
+		GetFriends(ctx context.Context, userID int) ([]entity.User, error)
 		GetUser(ctx context.Context, id int) (entity.User, error)
 		MultiCreateUser(ctx context.Context, users []entity.SecureUser) error
 		CreateUser(ctx context.Context, user entity.SecureUser) error

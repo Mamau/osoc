@@ -147,3 +147,27 @@ func (u *Repository) GetUser(ctx context.Context, id int) (entity.User, error) {
 
 	return user, nil
 }
+
+func (u *Repository) GetFriends(ctx context.Context, userID int) ([]entity.User, error) {
+	sqlQuery, args, err := u.db.Builder.
+		Select("id", "first_name", "last_name", "age", "sex", "interests", "created_at").
+		From("friends").
+		LeftJoin("users on users.id = friends.friend_id").
+		Where(squirrel.Eq{"friends.user_id": userID}).
+		ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var users []entity.User
+
+	if err = u.db.SelectContext(ctx, &users, sqlQuery, args...); err != nil {
+		return nil, err
+	}
+	if len(users) == 0 {
+		return nil, entity.ErrNotFound
+	}
+
+	return users, nil
+}
