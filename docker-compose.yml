@@ -51,6 +51,19 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
 
+  tarantool:
+    image: tarantool/tarantool:2.6.2
+    restart: always
+#    environment:
+#      TARANTOOL_USER: ${TA_USER}
+#      TARANTOOL_PASSWORD: ${TA_PASSWORD}
+    ports:
+      - "3301:3301"
+    platform: linux/amd64
+    volumes:
+      - ./tarantool:/opt/tarantool
+    command: tarantool /opt/tarantool/init.lua
+
   rabbitmq:
     image: 'rabbitmq:3-management'
     volumes:
