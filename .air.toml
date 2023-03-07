@@ -7,7 +7,7 @@ tmp_dir = "tmp"
 
 [build]
 # Just plain old shell command. You could use `make` as well.
-cmd = "go build -ldflags=\"${LDFLAGS}\" -buildvcs=false -o ./tmp/main ./cmd/\"${APP_NAME}\"/."
+cmd = "go build -ldflags=\"${LDFLAGS}\" -buildvcs=false -tags go_tarantool_ssl_disable -o ./tmp/main ./cmd/\"${APP_NAME}\"/."
 
 # Binary file yields from `cmd`.
 bin = "tmp/main"

@@ -1,5 +1,7 @@
 //go:build wireinject
 
+//go_tarantool_ssl_disable
+
 package main
 
 import (

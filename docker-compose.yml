@@ -5,6 +5,7 @@ services:
       - ./.env
     depends_on:
       - mysql
+      - tarantool
     build:
       context: .
       dockerfile: docker/dev.Dockerfile
@@ -52,30 +53,29 @@ services:
       - grafana-data:/var/lib/grafana
 
   tarantool:
-    image: tarantool/tarantool:2.6.2
+    image: tarantool/tarantool:2.6
     restart: always
 #    environment:
 #      TARANTOOL_USER: ${TA_USER}
 #      TARANTOOL_PASSWORD: ${TA_PASSWORD}
     ports:
       - "3301:3301"
-    platform: linux/amd64
+      - "8081:8081"
     volumes:
-      - ./tarantool:/opt/tarantool
-    command: tarantool /opt/tarantool/init.lua
+      - ./tarantool:/var/lib/tarantool
 
-  rabbitmq:
-    image: 'rabbitmq:3-management'
-    volumes:
-      - ./rabbit-mq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
-    ports:
-      - "15672:15672"
-      - ${RA_PORT}:${RA_PORT}
-    healthcheck:
-      test: [ "CMD", "rabbitmqctl", "status" ]
-      interval: 5s
-      timeout: 15s
-      retries: 5
+#  rabbitmq:
+#    image: 'rabbitmq:3-management'
+#    volumes:
+#      - ./rabbit-mq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+#    ports:
+#      - "15672:15672"
+#      - ${RA_PORT}:${RA_PORT}
+#    healthcheck:
+#      test: [ "CMD", "rabbitmqctl", "status" ]
+#      interval: 5s
+#      timeout: 15s
+#      retries: 5
 
 volumes:
   grafana-data:
