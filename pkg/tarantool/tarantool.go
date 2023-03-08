@@ -21,8 +21,8 @@ func NewConnection(opts ...Option) (*Connection, error) {
 	}
 
 	conn, err := tarantool.Connect(fmt.Sprintf("%s:%d", o.host, o.port), tarantool.Opts{
-		User: o.user,
-		Pass: o.password,
+		//User: o.user,
+		//Pass: o.password,
 	})
 
 	if err != nil {

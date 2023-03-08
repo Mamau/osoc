@@ -55,9 +55,9 @@ services:
   tarantool:
     image: tarantool/tarantool:latest
     restart: always
-    environment:
-      TARANTOOL_USER: ${TA_USER}
-      TARANTOOL_PASSWORD: ${TA_PASSWORD}
+#    environment:
+#      TARANTOOL_USER: ${TA_USER}
+#      TARANTOOL_PASSWORD: ${TA_PASSWORD}
     ports:
       - "3301:3301"
     platform: linux/amd64
