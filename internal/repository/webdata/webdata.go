@@ -9,18 +9,18 @@ import (
 	"io"
 	"net/http"
 	"osoc/internal/entity"
-	"osoc/internal/repository/user"
+	"osoc/internal/usecase/userinfo"
 	"osoc/pkg/log"
 	"strconv"
 	"strings"
 )
 
 type WebData struct {
-	repo *user.Repository
+	repo userinfo.UserRepo
 	log  log.Logger
 }
 
-func NewWebData(repo *user.Repository, log log.Logger) *WebData {
+func NewWebData(repo userinfo.UserRepo, log log.Logger) *WebData {
 	return &WebData{
 		repo: repo,
 		log:  log,

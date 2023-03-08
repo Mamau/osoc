@@ -47,25 +47,33 @@ func newApp() (*application.App, func(), error) {
 	}
 	secureRepo := user.NewSecureRepo(db)
 	auth := secure.NewAuth(logger, secureRepo, app)
-	repository := user.New(db)
-	service := userinfo.NewService(repository, logger)
-	friendRepository := friend.New(db)
-	friendsService := friends.NewService(friendRepository, repository, logger)
+	tarantool := config.GetTarantoolConfig(configConfig)
+	connection, cleanup2, err := serviceprovider.NewTarantool(tarantool)
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
+	tarantoolRepository := user.NewTarantool(connection)
+	service := userinfo.NewService(tarantoolRepository, logger)
+	repository := friend.New(db)
+	friendsService := friends.NewService(repository, tarantoolRepository, logger)
 	postRepository := post.New(db)
 	redis := config.GetRedisConfig(configConfig)
-	client, cleanup2, err := serviceprovider.NewRedis(redis, logger)
+	client, cleanup3, err := serviceprovider.NewRedis(redis, logger)
 	if err != nil {
+		cleanup2()
 		cleanup()
 		return nil, nil, err
 	}
 	cache := post.NewCacheRepository(client, logger)
 	rabbit := config.GetRabbitConfig(configConfig)
 	rmqProducer := producer.New(rabbit, logger)
-	postsService := posts.NewService(postRepository, repository, logger, cache, rabbit, rmqProducer)
-	webData := webdata.NewWebData(repository, logger)
+	postsService := posts.NewService(postRepository, tarantoolRepository, logger, cache, rabbit, rmqProducer)
+	webData := webdata.NewWebData(tarantoolRepository, logger)
 	proxyMysql := config.GetProxyMysqlConfig(configConfig)
-	mysqlProxyMysql, cleanup3, err := serviceprovider.NewProxyMysql(proxyMysql)
+	mysqlProxyMysql, cleanup4, err := serviceprovider.NewProxyMysql(proxyMysql)
 	if err != nil {
+		cleanup3()
 		cleanup2()
 		cleanup()
 		return nil, nil, err
@@ -77,9 +85,10 @@ func newApp() (*application.App, func(), error) {
 	promConfig := config.GetPrometheusConfig(configConfig)
 	promServer := serviceprovider.NewPrometheus(promConfig, logger)
 	rmqConsumer := consumer.New(logger, rabbit)
-	postsConsumer := posts.NewConsumer(logger, rmqConsumer, rabbit, repository)
+	postsConsumer := posts.NewConsumer(logger, rmqConsumer, rabbit, tarantoolRepository)
 	applicationApp := createApp(server, promServer, configConfig, logger, postsConsumer)
 	return applicationApp, func() {
+		cleanup4()
 		cleanup3()
 		cleanup2()
 		cleanup()

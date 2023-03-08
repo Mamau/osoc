@@ -120,7 +120,7 @@ migrate: ## Migration up
 
 .PHONY: compile
 compile: ## Make binary and docs
-	go build -ldflags="${LDFLAGS}" -o bin/${APP_NAME} cmd/${APP_NAME}/main.go cmd/${APP_NAME}/wire_gen.go
+	go build -ldflags="${LDFLAGS}" -tags go_tarantool_ssl_disable -o bin/${APP_NAME} cmd/${APP_NAME}/main.go cmd/${APP_NAME}/wire_gen.go
 
 ## https://goswagger.io/use/spec.html
 .PHONY: swagger-gen

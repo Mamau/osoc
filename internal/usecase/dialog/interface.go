@@ -5,7 +5,7 @@ import (
 	"osoc/internal/entity"
 )
 
-//go:generate mockgen -source=interfaces.go -destination=../../mocks/message_store.go -package=mocks
+//go:generate mockgen -source=interface.go -destination=../../mocks/message_store.go -package=mocks
 type (
 	// MessageStorage -.
 	MessageStorage interface {

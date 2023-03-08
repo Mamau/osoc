@@ -14,6 +14,7 @@ type Config struct {
 	ProxyMysql ProxyMysql
 	Redis      Redis
 	Rabbit     Rabbit
+	Tarantool  Tarantool
 }
 
 // GetConfig - получает конфиг файла на основе переменных окружения
