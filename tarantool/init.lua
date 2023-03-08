@@ -44,12 +44,11 @@ box.schema.func.create('find_user', {if_not_exists = true})
 
 box.func.find_user = function(name)
     local result = {}
-    local search = name .. '%'
-    for _, user in box.space.users.first_name:pairs(search) do
-        table.insert(result, user)
-    end
-    for _, user in box.space.users.first_name:pairs(search) do
-        table.insert(result, user)
+    for _, tuple in box.space.users.index.last_name:pairs(name,{iterator='GE'}) do
+        if(string.find(string.lower(tuple[3]), string.lower(name),1) == nil) then
+            break
+        end
+        table.insert(result, tuple)
     end
     return result
 end

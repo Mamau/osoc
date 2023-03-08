@@ -60,8 +60,25 @@ func (t *TarantoolRepository) CreateUser(ctx context.Context, user entity.Secure
 }
 
 func (t *TarantoolRepository) SearchUsers(ctx context.Context, query *request.UserSearch) ([]entity.User, error) {
-	//TODO implement me
-	panic("implement me")
+	args := []interface{}{query.LastName}
+	res, err := t.connection.Call("box.func.find_user", args)
+	if err != nil {
+		return nil, err
+	}
+
+	users := make([]entity.User, 0, len(res.Tuples()))
+	for _, tuple := range res.Tuples() {
+		users = append(users, entity.User{
+			ID:        int(tuple[0].(uint64)),
+			FirstName: tuple[1].(string),
+			LastName:  tuple[2].(string),
+			Age:       int(tuple[3].(uint64)),
+			Sex:       tuple[4].(string),
+			Interests: tuple[5].(string),
+		})
+	}
+
+	return users, nil
 }
 
 func (t *TarantoolRepository) UpdateUser(ctx context.Context, user entity.User) error {
