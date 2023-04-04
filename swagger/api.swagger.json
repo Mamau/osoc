@@ -9,84 +9,6 @@
   },
   "host": "localhost:8081",
   "paths": {
-    "/api/v1/dialog/{user_id}/list": {
-      "get": {
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "dialog"
-        ],
-        "summary": "create post",
-        "operationId": "dialog_list",
-        "parameters": [
-          {
-            "type": "string",
-            "name": "user_id",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "success response"
-          },
-          "500": {
-            "description": "Internal error"
-          }
-        }
-      }
-    },
-    "/api/v1/dialog/{user_id}/send": {
-      "post": {
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "dialog"
-        ],
-        "summary": "create post",
-        "operationId": "dialog_send",
-        "parameters": [
-          {
-            "type": "string",
-            "name": "user_id",
-            "in": "path",
-            "required": true
-          },
-          {
-            "name": "text",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "required": [
-                "text"
-              ],
-              "properties": {
-                "text": {
-                  "$ref": "#/definitions/DialogMessageText"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "success response"
-          },
-          "500": {
-            "description": "Internal error"
-          }
-        }
-      }
-    },
     "/api/v1/login": {
       "post": {
         "consumes": [
@@ -620,30 +542,6 @@
     }
   },
   "definitions": {
-    "DialogMessage": {
-      "type": "object",
-      "required": [
-        "from",
-        "to",
-        "text"
-      ],
-      "properties": {
-        "from": {
-          "$ref": "#/definitions/UserId"
-        },
-        "text": {
-          "$ref": "#/definitions/DialogMessageText"
-        },
-        "to": {
-          "$ref": "#/definitions/UserId"
-        }
-      }
-    },
-    "DialogMessageText": {
-      "description": "Текст сообщения",
-      "type": "string",
-      "example": "Привет, как дела?"
-    },
     "Post": {
       "description": "user post",
       "type": "object",

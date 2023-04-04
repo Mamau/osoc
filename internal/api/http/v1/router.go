@@ -21,7 +21,6 @@ func NewRouter(
 	logger log.Logger,
 	wd *webdata.WebData,
 	cache PostCache,
-	dp DialogProvider,
 ) http.Handler {
 	commonGroup := engine.Group("/api/v1")
 	commonGroup.GET("/", func(c *gin.Context) { c.Status(http.StatusNoContent) })
@@ -46,11 +45,6 @@ func NewRouter(
 	postGroup := commonGroup.Group("/post")
 	{
 		newPostRoutes(postGroup, logger, ps, cache)
-	}
-
-	dialogGroup := commonGroup.Group("/dialog")
-	{
-		newDialogRoutes(dialogGroup, logger, dp)
 	}
 
 	return engine
