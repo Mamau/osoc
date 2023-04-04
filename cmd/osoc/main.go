@@ -28,9 +28,9 @@ func createApp(
 			hs,
 			prom,
 		),
-		application.Daemons(
-			postConsumer,
-		),
+		//application.Daemons(
+		//	postConsumer,
+		//),
 	)
 }
 
