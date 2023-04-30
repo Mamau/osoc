@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/itimofeev/go-saga"
 	"osoc/internal/api/http/v1/request"
 	"osoc/internal/config"
 	"osoc/internal/entity"
@@ -79,30 +80,67 @@ func (s *Service) GetPost(ctx context.Context, id int) (entity.Post, error) {
 	return p, nil
 }
 func (s *Service) CreatePost(ctx context.Context, userID int, text string) error {
-	p := entity.Post{
-		Title:     "example",
-		UserID:    userID,
-		Text:      text,
-		CreatedAt: time.Now(),
+	// Создаем сагу
+	tx := saga.NewSaga("create_post")
+	// Шаг 1: увеличение счетчика непрочитанных сообщений
+	if err := tx.AddStep(&saga.Step{
+		Name: "counter_increase",
+		Func: func(context.Context) error {
+			fmt.Println("вызов сервиса с счетчиком")
+			return nil
+		},
+		CompensateFunc: func(context.Context) error {
+			fmt.Println("вызов сервиса с отменой счетчика")
+			return nil
+		},
+	}); err != nil {
+		s.logger.Err(err).Msg("error while increase counter")
 	}
-	id, err := s.postRepo.AddPost(ctx, p)
-	if err != nil {
-		s.logger.Err(err).Msg("error while add post")
-		return errors.SomethingWentWrong
-	}
-	p.ID = id
+	// Шаг 2: сохранение сообщения
+	if err := tx.AddStep(&saga.Step{
+		Name: "save_message",
+		Func: func(context.Context) error {
+			p := entity.Post{
+				Title:     "example",
+				UserID:    userID,
+				Text:      text,
+				CreatedAt: time.Now(),
+			}
 
-	if err := s.cache.Save(ctx, userID, p); err != nil {
-		s.logger.Err(err).Msg("error save post to cache")
+			id, err := s.postRepo.AddPost(ctx, p)
+			if err != nil {
+				s.logger.Err(err).Msg("error while add post")
+				return errors.SomethingWentWrong
+			}
+			p.ID = id
+
+			if err := s.cache.Save(ctx, userID, p); err != nil {
+				s.logger.Err(err).Msg("error save post to cache")
+			}
+
+			data, err := json.Marshal(p)
+			if err != nil {
+				s.logger.Err(err).Msg("error while marshal post for rabbit")
+				return errors.SomethingWentWrong
+			}
+
+			s.producer.PublishMessage(fmt.Sprintf("%s.%d", s.rabbitConfig.PostChannel, userID), "application/json", data)
+			return nil
+		},
+		CompensateFunc: func(context.Context) error {
+			// тут можем как то специально пометить запись или удалить
+			s.logger.Warn().Msg("we can delete post")
+			return nil
+		},
+	}); err != nil {
+		s.logger.Err(err).Msg("error while save message")
 	}
 
-	data, err := json.Marshal(p)
-	if err != nil {
-		s.logger.Err(err).Msg("error while marshal post for rabbit")
-		return errors.SomethingWentWrong
-	}
+	store := saga.New()
+	c := saga.NewCoordinator(ctx, ctx, tx, store)
+	result := c.Play()
 
-	s.producer.PublishMessage(fmt.Sprintf("%s.%d", s.rabbitConfig.PostChannel, userID), "application/json", data)
+	fmt.Println(result.ExecutionError)
 
 	return nil
 }
