@@ -9,6 +9,7 @@ import (
 	"osoc/internal/usecase/userinfo"
 	"osoc/pkg/log"
 	"osoc/pkg/router/middleware/auth/jwt"
+	"osoc/pkg/router/middleware/requestmetrics"
 )
 
 func NewRouter(
@@ -23,6 +24,7 @@ func NewRouter(
 	cache PostCache,
 ) http.Handler {
 	commonGroup := engine.Group("/api/v1")
+	commonGroup.Use(requestmetrics.New(conf.App.Name))
 	commonGroup.GET("/", func(c *gin.Context) { c.Status(http.StatusNoContent) })
 	{
 		newAuthRoutes(commonGroup, logger, authService)
